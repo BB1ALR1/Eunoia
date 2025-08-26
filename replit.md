@@ -38,9 +38,13 @@ Preferred communication style: Simple, everyday language.
 - **Response Processing**: Contextual AI responses based on session history and user goals
 
 ### Authentication & Session Management
-- **Session Storage**: In-memory storage with database persistence for scalability
-- **Session Tracking**: Complete conversation history with metadata and analytics
-- **User Management**: Basic user authentication system with secure password handling
+- **User Authentication**: Complete login/signup system with secure password hashing (bcrypt)
+- **Session Storage**: PostgreSQL-backed express-session with connect-pg-simple
+- **Data Isolation**: All user data (sessions, messages, journal entries, mood data) protected by user_id foreign keys
+- **Password Security**: Bcrypt hashing with salt rounds for secure password storage
+- **Frontend Auth**: React hooks for authentication state management and protected routes
+- **Session Persistence**: Secure session cookies with database session storage
+- **User Registration**: New user registration with immediate login after signup
 
 ### Voice Integration
 - **Speech Recognition**: Browser-native Web Speech API for voice input

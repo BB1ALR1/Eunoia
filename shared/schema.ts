@@ -1,13 +1,15 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  username: text("username").notNull(),
   password: text("password").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  unique("users_username_unique").on(table.username),
+]);
 
 export const sessions = pgTable("sessions", {
   id: serial("id").primaryKey(),
@@ -18,7 +20,7 @@ export const sessions = pgTable("sessions", {
   status: text("status").notNull().default("active"), // active, completed, paused
   createdAt: timestamp("created_at").defaultNow(),
   endedAt: timestamp("ended_at"),
-  duration: integer("duration_seconds"),
+  durationSeconds: integer("duration_seconds"),
   summary: text("summary"),
 });
 
@@ -66,7 +68,7 @@ export const insertSessionSchema = createInsertSchema(sessions).omit({
   id: true,
   createdAt: true,
   endedAt: true,
-  duration: true,
+  durationSeconds: true,
   summary: true,
 });
 
