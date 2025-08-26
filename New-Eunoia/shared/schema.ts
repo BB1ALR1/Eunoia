@@ -1,0 +1,105 @@
+import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const sessions = pgTable("sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  therapistPersonality: text("therapist_personality").notNull(),
+  voiceEnabled: boolean("voice_enabled").default(false),
+  goals: json("goals").$type<string[]>().notNull().default([]),
+  status: text("status").notNull().default("active"), // active, completed, paused
+  createdAt: timestamp("created_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+  duration: integer("duration_seconds"),
+  summary: text("summary"),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull(),
+  content: text("content").notNull(),
+  isUser: boolean("is_user").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const crisisEvents = pgTable("crisis_events", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull(),
+  detectedKeywords: json("detected_keywords").$type<string[]>().notNull(),
+  userMessage: text("user_message").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  actionTaken: text("action_taken"),
+});
+
+export const journalEntries = pgTable("journal_entries", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id"),
+  title: text("title"),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const moodEntries = pgTable("mood_entries", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id"),
+  moodScore: integer("mood_score").notNull(), // 1-10
+  moodEmoji: text("mood_emoji"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSessionSchema = createInsertSchema(sessions).omit({
+  id: true,
+  createdAt: true,
+  endedAt: true,
+  duration: true,
+  summary: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCrisisEventSchema = createInsertSchema(crisisEvents).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMoodEntrySchema = createInsertSchema(moodEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertSession = z.infer<typeof insertSessionSchema>;
+export type Session = typeof sessions.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertCrisisEvent = z.infer<typeof insertCrisisEventSchema>;
+export type CrisisEvent = typeof crisisEvents.$inferSelect;
+export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
+export type JournalEntry = typeof journalEntries.$inferSelect;
+export type InsertMoodEntry = z.infer<typeof insertMoodEntrySchema>;
+export type MoodEntry = typeof moodEntries.$inferSelect;
