@@ -28,7 +28,8 @@ import {
   Calendar,
   Clock,
   Home,
-  Settings
+  Settings,
+  User
 } from "lucide-react";
 import type { CurrentPage } from "@/App";
 import type { Session } from "@shared/schema";
@@ -193,6 +194,13 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
       icon: Settings,
       active: activeSection === "settings",
       action: () => handleNavigation('settings')
+    },
+    {
+      id: "account",
+      label: "Account Settings",
+      icon: User,
+      active: activeSection === "account",
+      action: () => handleNavigation('account')
     }
   ];
 

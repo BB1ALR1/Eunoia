@@ -13,6 +13,7 @@ import MoodPage from "@/pages/mood";
 import CBTToolsPage from "@/pages/cbt-tools";
 import SessionSummariesPage from "@/pages/session-summaries";
 import SettingsPage from "@/pages/settings";
+import AccountPage from "@/pages/account";
 import SessionPage from "@/pages/session";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
@@ -23,7 +24,7 @@ export interface SessionSettings {
   selectedGoals: string[];
 }
 
-export type CurrentPage = 'home' | 'session' | 'journal' | 'mood' | 'cbt-tools' | 'session-summaries' | 'settings';
+export type CurrentPage = 'home' | 'session' | 'journal' | 'mood' | 'cbt-tools' | 'session-summaries' | 'settings' | 'account';
 
 function AuthenticatedApp() {
   const [sessionSettings, setSessionSettings] = useState<SessionSettings | null>(null);
@@ -102,6 +103,13 @@ function AuthenticatedApp() {
           sessionId={sessionId}
           sessionSettings={sessionSettings}
           onUpdateSettings={setSessionSettings}
+        />;
+      case 'account':
+        return <AccountPage 
+          onBack={() => setCurrentPage('home')} 
+          onPageChange={setCurrentPage}
+          currentPage={currentPage}
+          sessionId={sessionId}
         />;
       default:
         return <Home 

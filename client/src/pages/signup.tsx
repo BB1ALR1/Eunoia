@@ -15,6 +15,7 @@ interface SignupPageProps {
 
 export default function SignupPage({ onSignupSuccess, onSwitchToLogin }: SignupPageProps) {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +23,7 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }: SignupP
   const { toast } = useToast();
 
   const signupMutation = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
+    mutationFn: async (credentials: { username: string; email: string; password: string }) => {
       const response = await apiRequest("POST", "/api/auth/signup", credentials);
       return response.json();
     },
@@ -45,10 +46,21 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }: SignupP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       toast({
         title: "Missing Information",
         description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
         variant: "destructive",
       });
       return;
@@ -72,7 +84,7 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }: SignupP
       return;
     }
 
-    signupMutation.mutate({ username: username.trim(), password });
+    signupMutation.mutate({ username: username.trim(), email: email.trim(), password });
   };
 
   const isPasswordValid = password.length >= 6;
@@ -102,6 +114,19 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }: SignupP
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 autoComplete="username"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
               />
             </div>
             

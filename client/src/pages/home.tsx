@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Menu, Settings, Heart } from "lucide-react";
+import { Menu, Settings, Heart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/sidebar";
 import type { SessionSettings, CurrentPage } from "@/App";
@@ -16,6 +16,11 @@ interface HomeProps {
 export default function Home({ sessionSettings, onPageChange, onSessionStart }: HomeProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { toast } = useToast();
+
+  // Get current user data for profile pic
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
 
   // Create session mutation
   const createSessionMutation = useMutation({
@@ -91,15 +96,37 @@ export default function Home({ sessionSettings, onPageChange, onSessionStart }: 
               <h1 className="text-xl font-bold text-primary">Eunoia</h1>
             </div>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange('settings')}
-              className="flex items-center space-x-2"
-            >
-              <Settings className="h-4 w-4" />
-              <span>Customize Session</span>
-            </Button>
+            <div className="flex items-center space-x-3">
+              {/* Profile Picture */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange('account')}
+                className="p-1 rounded-full"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  {(user as any)?.profilePic ? (
+                    <img 
+                      src={(user as any).profilePic} 
+                      alt="Profile" 
+                      className="w-full h-full rounded-full object-cover" 
+                    />
+                  ) : (
+                    <User className="w-4 h-4 text-white" />
+                  )}
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange('settings')}
+                className="flex items-center space-x-2"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Customize Session</span>
+              </Button>
+            </div>
           </div>
         </div>
 
