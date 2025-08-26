@@ -5,10 +5,13 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull(),
+  email: text("email").notNull(),
   password: text("password").notNull(),
+  profilePic: text("profile_pic"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   unique("users_username_unique").on(table.username),
+  unique("users_email_unique").on(table.email),
 ]);
 
 export const sessions = pgTable("sessions", {
@@ -62,6 +65,7 @@ export const moodEntries = pgTable("mood_entries", {
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
+  profilePic: true,
 });
 
 export const insertSessionSchema = createInsertSchema(sessions).omit({

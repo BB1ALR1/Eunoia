@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "../shared/db";
 import { sessions, messages, users, insertUserSchema, insertSessionSchema, insertMessageSchema } from "../shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -46,20 +46,33 @@ export function registerRoutes(app: Express) {
   // Authentication routes
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { username, email, password } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "Username, email, and password are required" });
       }
 
       if (password.length < 6) {
         return res.status(400).json({ message: "Password must be at least 6 characters long" });
       }
 
-      // Check if username already exists
-      const existingUser = await db.select().from(users).where(eq(users.username, username)).limit(1);
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Please enter a valid email address" });
+      }
+
+      // Check if username or email already exists
+      const existingUser = await db.select().from(users).where(
+        or(eq(users.username, username), eq(users.email, email))
+      ).limit(1);
       if (existingUser.length > 0) {
-        return res.status(400).json({ message: "Username already exists" });
+        const existing = existingUser[0];
+        if (existing.username === username) {
+          return res.status(400).json({ message: "Username already exists" });
+        } else {
+          return res.status(400).json({ message: "Email already exists" });
+        }
       }
 
       // Hash password
@@ -70,6 +83,7 @@ export function registerRoutes(app: Express) {
         .insert(users)
         .values({
           username,
+          email,
           password: hashedPassword,
         })
         .returning();
@@ -81,6 +95,7 @@ export function registerRoutes(app: Express) {
       res.json({ 
         id: newUser.id, 
         username: newUser.username,
+        email: newUser.email,
         message: "Account created successfully" 
       });
     } catch (error) {
@@ -91,22 +106,24 @@ export function registerRoutes(app: Express) {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { usernameOrEmail, password } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+      if (!usernameOrEmail || !password) {
+        return res.status(400).json({ message: "Username/email and password are required" });
       }
 
-      // Find user
-      const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+      // Find user by username or email
+      const [user] = await db.select().from(users).where(
+        or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail))
+      ).limit(1);
       if (!user) {
-        return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid username/email or password" });
       }
 
       // Check password
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid username/email or password" });
       }
 
       // Create session
@@ -116,6 +133,7 @@ export function registerRoutes(app: Express) {
       res.json({ 
         id: user.id, 
         username: user.username,
+        email: user.email,
         message: "Logged in successfully" 
       });
     } catch (error) {
@@ -143,7 +161,9 @@ export function registerRoutes(app: Express) {
       }
       res.json({ 
         id: user.id, 
-        username: user.username 
+        username: user.username,
+        email: user.email,
+        profilePic: user.profilePic
       });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -313,6 +333,186 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching mood entries:", error);
       res.status(500).json({ message: "Failed to fetch mood entries" });
+    }
+  });
+
+  // Account management routes
+  app.patch("/api/auth/change-password", requireAuth, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters long" });
+      }
+
+      // Get current user
+      const [user] = await db.select().from(users).where(eq(users.id, (req.session as any).userId)).limit(1);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await db
+        .update(users)
+        .set({ password: hashedNewPassword })
+        .where(eq(users.id, (req.session as any).userId));
+
+      res.json({ message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
+
+  app.patch("/api/auth/update-profile", requireAuth, async (req, res) => {
+    try {
+      const { username, email, profilePic } = req.body;
+      
+      if (!username || !email) {
+        return res.status(400).json({ message: "Username and email are required" });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Please enter a valid email address" });
+      }
+
+      // Check if username or email already exists (excluding current user)
+      const existingUser = await db.select().from(users).where(
+        or(eq(users.username, username), eq(users.email, email))
+      ).limit(1);
+      
+      if (existingUser.length > 0 && existingUser[0].id !== (req.session as any).userId) {
+        const existing = existingUser[0];
+        if (existing.username === username) {
+          return res.status(400).json({ message: "Username already exists" });
+        } else {
+          return res.status(400).json({ message: "Email already exists" });
+        }
+      }
+
+      // Update user profile
+      const [updatedUser] = await db
+        .update(users)
+        .set({ 
+          username, 
+          email, 
+          profilePic: profilePic || null 
+        })
+        .where(eq(users.id, (req.session as any).userId))
+        .returning();
+
+      // Update session username
+      (req.session as any).username = updatedUser.username;
+
+      res.json({ 
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        profilePic: updatedUser.profilePic,
+        message: "Profile updated successfully" 
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  app.get("/api/auth/download-data", requireAuth, async (req, res) => {
+    try {
+      // Get user data
+      const [user] = await db.select().from(users).where(eq(users.id, (req.session as any).userId)).limit(1);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get user's sessions
+      const userSessions = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, (req.session as any).userId))
+        .orderBy(desc(sessions.createdAt));
+
+      // Get all messages for user's sessions
+      const sessionIds = userSessions.map(s => s.id);
+      const userMessages = sessionIds.length > 0 
+        ? await db
+            .select()
+            .from(messages)
+            .where(eq(messages.sessionId, sessionIds[0])) // For now, just first session
+            .orderBy(messages.createdAt)
+        : [];
+
+      const userData = {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.createdAt
+        },
+        sessions: userSessions,
+        messages: userMessages,
+        exportDate: new Date().toISOString()
+      };
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="my-eunoia-data.json"');
+      res.json(userData);
+    } catch (error) {
+      console.error("Error downloading user data:", error);
+      res.status(500).json({ message: "Failed to download user data" });
+    }
+  });
+
+  app.delete("/api/auth/delete-account", requireAuth, async (req, res) => {
+    try {
+      const { password } = req.body;
+      
+      if (!password) {
+        return res.status(400).json({ message: "Password is required to delete account" });
+      }
+
+      // Get current user
+      const [user] = await db.select().from(users).where(eq(users.id, (req.session as any).userId)).limit(1);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Password is incorrect" });
+      }
+
+      // Delete user (this will cascade delete sessions and messages if foreign keys are set)
+      await db.delete(users).where(eq(users.id, (req.session as any).userId));
+
+      // Destroy session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+        }
+      });
+
+      res.clearCookie('connect.sid');
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      res.status(500).json({ message: "Failed to delete account" });
     }
   });
 
