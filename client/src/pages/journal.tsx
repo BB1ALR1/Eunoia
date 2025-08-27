@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, BookOpen, Plus, Calendar, Menu } from "lucide-react";
+import { ArrowLeft, BookOpen, Plus, Calendar, Menu, Trash2 } from "lucide-react";
 import type { JournalEntry } from "@shared/schema";
 import Sidebar from "@/components/sidebar";
 import type { CurrentPage } from "@/App";
@@ -74,6 +74,28 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
       toast({
         title: "Error",
         description: "Failed to save journal entry. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete journal entry mutation
+  const deleteEntryMutation = useMutation({
+    mutationFn: async (entryId: number) => {
+      const response = await apiRequest("DELETE", `/api/journal/${entryId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/journal", sessionId] });
+      toast({
+        title: "Entry Deleted",
+        description: "Your journal entry has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete journal entry. Please try again.",
         variant: "destructive",
       });
     }
@@ -217,9 +239,20 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
                                 <p className="text-sm text-primary mb-2 italic">Prompt: {entry.prompt}</p>
                               )}
                             </div>
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <Calendar className="w-4 h-4 mr-1" />
-                              {formatDate(entry.timestamp || new Date())}
+                            <div className="flex items-center space-x-2">
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Calendar className="w-4 h-4 mr-1" />
+                                {formatDate(entry.createdAt)}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteEntryMutation.mutate(entry.id)}
+                                disabled={deleteEntryMutation.isPending}
+                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
                             </div>
                           </div>
                           <p className="text-foreground whitespace-pre-wrap">{entry.content}</p>

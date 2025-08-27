@@ -501,9 +501,16 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
                     variant="outline" 
                     onClick={logout}
                     disabled={isLoggingOut}
-                    className="w-full"
+                    className="w-full h-12 text-base font-medium border-2 hover:bg-muted/50 transition-all duration-200"
                   >
-                    {isLoggingOut ? "Logging out..." : "Log Out"}
+                    {isLoggingOut ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        <span>Logging out...</span>
+                      </div>
+                    ) : (
+                      "Log Out"
+                    )}
                   </Button>
                 </CardContent>
               </Card>

@@ -97,6 +97,16 @@ export default function Home({ sessionSettings, onPageChange, onSessionStart }: 
             </div>
             
             <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange('settings')}
+                className="flex items-center space-x-2"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Customize Session</span>
+              </Button>
+              
               {/* Profile Picture */}
               <Button
                 variant="ghost"
@@ -115,16 +125,6 @@ export default function Home({ sessionSettings, onPageChange, onSessionStart }: 
                     <User className="w-4 h-4 text-white" />
                   )}
                 </div>
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange('settings')}
-                className="flex items-center space-x-2"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Customize Session</span>
               </Button>
             </div>
           </div>

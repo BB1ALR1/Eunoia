@@ -30,26 +30,30 @@
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
+  --background: hsl(240, 10%, 6%);
+  --foreground: hsl(0, 0%, 95%);
+  --muted: hsl(240, 5%, 18%);
+  --muted-foreground: hsl(240, 5%, 65%);
+  --popover: hsl(240, 8%, 8%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --card: hsl(240, 8%, 10%);
+  --card-foreground: hsl(0, 0%, 95%);
+  --border: hsl(240, 5%, 22%);
+  --input: hsl(240, 5%, 18%);
   --primary: hsl(255, 91%, 69%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(186, 100%, 39%);
+  --secondary: hsl(240, 5%, 18%);
+  --secondary-foreground: hsl(0, 0%, 95%);
+  --accent: hsl(186, 100%, 45%);
   --accent-foreground: hsl(0, 0%, 100%);
-  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive: hsl(0, 70%, 50%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
+  --ring: hsl(240, 5%, 25%);
   --radius: 0.5rem;
+  --success: hsl(122, 39%, 49%);
+  --warning: hsl(43, 96%, 56%);
+  --error: hsl(4, 90%, 58%);
+  --neutral: hsl(240, 8%, 10%);
 }
 
 @layer base {
@@ -69,6 +73,10 @@
   
   .bg-gradient-neutral {
     background: linear-gradient(135deg, hsl(251, 100%, 96%) 0%, hsl(207, 100%, 96%) 100%);
+  }
+  
+  .dark .bg-gradient-neutral {
+    background: linear-gradient(135deg, hsl(240, 10%, 8%) 0%, hsl(240, 12%, 12%) 100%);
   }
   
   .animate-pulse-soft {

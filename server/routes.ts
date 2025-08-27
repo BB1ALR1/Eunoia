@@ -379,6 +379,40 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/journal/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const entryId = parseInt(req.params.id);
+      
+      if (!entryId || isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      // First check if the entry exists and belongs to the user
+      const [existingEntry] = await db
+        .select()
+        .from(journalEntries)
+        .where(eq(journalEntries.id, entryId))
+        .limit(1);
+
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Journal entry not found" });
+      }
+
+      if (existingEntry.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to delete this entry" });
+      }
+
+      // Delete the entry
+      await db.delete(journalEntries).where(eq(journalEntries.id, entryId));
+      
+      res.json({ message: "Journal entry deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting journal entry:", error);
+      res.status(500).json({ message: "Failed to delete journal entry" });
+    }
+  });
+
   // Mood entries routes (protected)
   app.get("/api/mood", requireAuth, async (req, res) => {
     try {
@@ -415,6 +449,40 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error creating mood entry:", error);
       res.status(500).json({ message: "Failed to create mood entry" });
+    }
+  });
+
+  app.delete("/api/mood/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const entryId = parseInt(req.params.id);
+      
+      if (!entryId || isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      // First check if the entry exists and belongs to the user
+      const [existingEntry] = await db
+        .select()
+        .from(moodEntries)
+        .where(eq(moodEntries.id, entryId))
+        .limit(1);
+
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Mood entry not found" });
+      }
+
+      if (existingEntry.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to delete this entry" });
+      }
+
+      // Delete the entry
+      await db.delete(moodEntries).where(eq(moodEntries.id, entryId));
+      
+      res.json({ message: "Mood entry deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting mood entry:", error);
+      res.status(500).json({ message: "Failed to delete mood entry" });
     }
   });
 

@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Smile, TrendingUp, Calendar, Menu } from "lucide-react";
+import { ArrowLeft, Smile, TrendingUp, Calendar, Menu, Trash2 } from "lucide-react";
 import type { MoodEntry } from "@shared/schema";
 import Sidebar from "@/components/sidebar";
 import type { CurrentPage } from "@/App";
@@ -75,6 +75,28 @@ export default function MoodPage({ sessionId, onBack, onPageChange, currentPage 
       toast({
         title: "Error",
         description: "Failed to record mood. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete mood entry mutation
+  const deleteMoodMutation = useMutation({
+    mutationFn: async (entryId: number) => {
+      const response = await apiRequest("DELETE", `/api/mood/${entryId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/mood", sessionId] });
+      toast({
+        title: "Entry Deleted",
+        description: "Your mood entry has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete mood entry. Please try again.",
         variant: "destructive",
       });
     }
@@ -289,9 +311,20 @@ export default function MoodPage({ sessionId, onBack, onPageChange, currentPage 
                             {entry.moodEmoji && <span className="text-xl">{entry.moodEmoji}</span>}
                             <span className="font-medium">Score: {entry.moodScore}/10</span>
                           </div>
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {formatDate(entry.timestamp || new Date())}
+                          <div className="flex items-center space-x-2">
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              {formatDate(entry.createdAt)}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteMoodMutation.mutate(entry.id)}
+                              disabled={deleteMoodMutation.isPending}
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
                           </div>
                         </div>
                         {entry.notes && (

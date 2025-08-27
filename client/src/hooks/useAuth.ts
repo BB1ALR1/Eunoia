@@ -28,6 +28,8 @@ export function useAuth() {
       queryClient.clear();
       // Clear login state from localStorage
       localStorage.removeItem("eunoia-auth-state");
+      // Immediately redirect to sign-in without reload
+      window.location.href = "/";
     },
   });
 
