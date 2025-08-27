@@ -275,20 +275,21 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
                       Click any prompt to start writing
                     </p>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-2">
                     {journalPrompts.map((prompt, index) => (
-                      <div
+                      <Button
                         key={index}
-                        className="group cursor-pointer p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+                        variant="outline"
+                        className="w-full text-left justify-start h-auto py-3 px-4 text-sm font-normal bg-background hover:bg-primary/10 hover:text-primary hover:border-primary/50 border-border dark:bg-background dark:hover:bg-primary/10 dark:border-border dark:hover:border-primary/50 transition-all duration-200"
                         onClick={() => handlePromptSelect(prompt)}
                       >
-                        <div className="flex items-start space-x-2">
+                        <div className="flex items-start space-x-3 w-full">
                           <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-2 flex-shrink-0"></div>
-                          <p className="text-sm text-foreground group-hover:text-primary transition-colors leading-relaxed">
+                          <span className="leading-relaxed text-left flex-1">
                             {prompt}
-                          </p>
+                          </span>
                         </div>
-                      </div>
+                      </Button>
                     ))}
                     
                     <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-dashed border-border">
