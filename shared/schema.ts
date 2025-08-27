@@ -8,6 +8,10 @@ export const users = pgTable("users", {
   email: text("email").notNull(),
   password: text("password").notNull(),
   profilePic: text("profile_pic"),
+  therapistPersonality: text("therapist_personality"),
+  selectedVoice: text("selected_voice"),
+  selectedGoals: json("selected_goals").$type<string[]>().default([]),
+  darkMode: boolean("dark_mode").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   unique("users_username_unique").on(table.username),
@@ -16,7 +20,7 @@ export const users = pgTable("users", {
 
 export const sessions = pgTable("sessions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id"),
+  userId: integer("user_id").notNull(),
   therapistPersonality: text("therapist_personality").notNull(),
   voiceEnabled: boolean("voice_enabled").default(false),
   goals: json("goals").$type<string[]>().notNull().default([]),
@@ -25,6 +29,9 @@ export const sessions = pgTable("sessions", {
   endedAt: timestamp("ended_at"),
   durationSeconds: integer("duration_seconds"),
   summary: text("summary"),
+  keyTopics: json("key_topics").$type<string[]>().default([]),
+  startTime: timestamp("start_time").defaultNow(),
+  duration: integer("duration"),
 });
 
 export const messages = pgTable("messages", {
@@ -46,6 +53,7 @@ export const crisisEvents = pgTable("crisis_events", {
 
 export const journalEntries = pgTable("journal_entries", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   sessionId: integer("session_id"),
   title: text("title"),
   content: text("content").notNull(),
@@ -54,6 +62,7 @@ export const journalEntries = pgTable("journal_entries", {
 
 export const moodEntries = pgTable("mood_entries", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   sessionId: integer("session_id"),
   moodScore: integer("mood_score").notNull(), // 1-10
   moodEmoji: text("mood_emoji"),

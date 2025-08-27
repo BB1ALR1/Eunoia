@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "../shared/db";
-import { sessions, messages, users, insertUserSchema, insertSessionSchema, insertMessageSchema } from "../shared/schema";
+import { sessions, messages, users, journalEntries, moodEntries, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema } from "../shared/schema";
 import { eq, desc, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import session from "express-session";
@@ -159,15 +159,41 @@ export function registerRoutes(app: Express) {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ 
-        id: user.id, 
-        username: user.username,
-        email: user.email,
-        profilePic: user.profilePic
-      });
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Update user preferences
+  app.patch("/api/auth/preferences", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { darkMode, therapistPersonality, selectedVoice, selectedGoals } = req.body;
+      
+      const updateData: any = {};
+      if (darkMode !== undefined) updateData.darkMode = darkMode;
+      if (therapistPersonality !== undefined) updateData.therapistPersonality = therapistPersonality;
+      if (selectedVoice !== undefined) updateData.selectedVoice = selectedVoice;
+      if (selectedGoals !== undefined) updateData.selectedGoals = selectedGoals;
+      
+      const [updatedUser] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      res.status(500).json({ message: "Failed to update preferences" });
     }
   });
 
@@ -315,24 +341,80 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // Add routes for journal entries, mood entries, etc. (protected)
+  // Journal entries routes (protected)
   app.get("/api/journal", requireAuth, async (req, res) => {
     try {
-      // For now, return empty array since journal entries need session relationship
-      res.json([]);
+      const userId = (req.session as any).userId;
+      const userJournalEntries = await db
+        .select()
+        .from(journalEntries)
+        .where(eq(journalEntries.userId, userId))
+        .orderBy(desc(journalEntries.createdAt));
+      res.json(userJournalEntries);
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       res.status(500).json({ message: "Failed to fetch journal entries" });
     }
   });
 
+  app.post("/api/journal", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { title, content, sessionId } = req.body;
+      
+      const [newEntry] = await db
+        .insert(journalEntries)
+        .values({
+          userId,
+          sessionId: sessionId || null,
+          title: title || null,
+          content,
+        })
+        .returning();
+
+      res.json(newEntry);
+    } catch (error) {
+      console.error("Error creating journal entry:", error);
+      res.status(500).json({ message: "Failed to create journal entry" });
+    }
+  });
+
+  // Mood entries routes (protected)
   app.get("/api/mood", requireAuth, async (req, res) => {
     try {
-      // For now, return empty array since mood entries need session relationship
-      res.json([]);
+      const userId = (req.session as any).userId;
+      const userMoodEntries = await db
+        .select()
+        .from(moodEntries)
+        .where(eq(moodEntries.userId, userId))
+        .orderBy(desc(moodEntries.createdAt));
+      res.json(userMoodEntries);
     } catch (error) {
       console.error("Error fetching mood entries:", error);
       res.status(500).json({ message: "Failed to fetch mood entries" });
+    }
+  });
+
+  app.post("/api/mood", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { moodScore, moodEmoji, notes, sessionId } = req.body;
+      
+      const [newEntry] = await db
+        .insert(moodEntries)
+        .values({
+          userId,
+          sessionId: sessionId || null,
+          moodScore,
+          moodEmoji: moodEmoji || null,
+          notes: notes || null,
+        })
+        .returning();
+
+      res.json(newEntry);
+    } catch (error) {
+      console.error("Error creating mood entry:", error);
+      res.status(500).json({ message: "Failed to create mood entry" });
     }
   });
 

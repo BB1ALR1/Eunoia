@@ -3,8 +3,9 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/contexts/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Onboarding from "@/pages/onboarding";
 import Home from "@/pages/home";
@@ -27,9 +28,22 @@ export interface SessionSettings {
 export type CurrentPage = 'home' | 'session' | 'journal' | 'mood' | 'cbt-tools' | 'session-summaries' | 'settings' | 'account';
 
 function AuthenticatedApp() {
+  const { user } = useAuth();
   const [sessionSettings, setSessionSettings] = useState<SessionSettings | null>(null);
   const [currentPage, setCurrentPage] = useState<CurrentPage>('home');
   const [sessionId, setSessionId] = useState<number | null>(null);
+  
+  // Load user session settings from database
+  useEffect(() => {
+    if (user && (user as any).therapistPersonality) {
+      const userSettings: SessionSettings = {
+        therapistPersonality: (user as any).therapistPersonality || 'empathetic',
+        selectedVoice: (user as any).selectedVoice || 'alloy',
+        selectedGoals: (user as any).selectedGoals || []
+      };
+      setSessionSettings(userSettings);
+    }
+  }, [user]);
 
   const renderCurrentPage = () => {
     if (!sessionSettings) {
@@ -178,10 +192,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="light" storageKey="eunoia-ui-theme">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

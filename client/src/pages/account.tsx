@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/contexts/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,6 +57,7 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { theme, setTheme, isDark } = useTheme();
 
   // Get current user data
   const { data: user, isLoading } = useQuery({
@@ -426,7 +428,10 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
                       <Label>Dark Mode</Label>
                       <p className="text-sm text-muted-foreground">Toggle dark mode theme</p>
                     </div>
-                    <Switch />
+                    <Switch 
+                      checked={isDark}
+                      onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">

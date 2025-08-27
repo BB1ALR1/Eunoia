@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Brain, HandHeart, Leaf, Wind, Sun, Mountain, Users, Play } from "lucide-react";
@@ -102,6 +105,30 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const [selectedPersonality, setSelectedPersonality] = useState("");
   const [selectedVoice, setSelectedVoice] = useState("");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Save preferences mutation
+  const savePreferencesMutation = useMutation({
+    mutationFn: async (settings: SessionSettings) => {
+      const response = await apiRequest("PATCH", "/api/auth/preferences", {
+        therapistPersonality: settings.therapistPersonality,
+        selectedVoice: settings.selectedVoice,
+        selectedGoals: settings.selectedGoals,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to save preferences",
+        variant: "destructive",
+      });
+    },
+  });
 
   const nextStep = () => {
     if (currentStep < 5) {
@@ -126,10 +153,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   };
 
   const handleComplete = () => {
-    onComplete({
+    const settings: SessionSettings = {
       therapistPersonality: selectedPersonality,
       selectedVoice: selectedVoice,
       selectedGoals: selectedGoals
+    };
+    
+    // Save to database and then complete
+    savePreferencesMutation.mutate(settings, {
+      onSuccess: () => {
+        onComplete(settings);
+      }
     });
   };
 
