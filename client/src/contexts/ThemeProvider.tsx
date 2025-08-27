@@ -78,8 +78,12 @@ export function ThemeProvider({
       const newTheme = (user as any).darkMode ? "dark" : "light";
       setTheme(newTheme);
       localStorage.setItem(storageKey, newTheme);
+    } else if (user === null) {
+      // User is logged out, reset theme to default
+      setTheme(defaultTheme);
+      localStorage.setItem(storageKey, defaultTheme);
     }
-  }, [user, storageKey]);
+  }, [user, storageKey, defaultTheme]);
 
   const value = {
     theme,
