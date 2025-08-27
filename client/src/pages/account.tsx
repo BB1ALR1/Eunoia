@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/contexts/ThemeProvider";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +33,8 @@ import {
   Bell,
   Moon,
   Globe,
-  Menu
+  Menu,
+  Settings
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import Sidebar from "@/components/sidebar";
@@ -58,6 +60,7 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { theme, setTheme, isDark } = useTheme();
+  const { logout, isLoggingOut } = useAuth();
 
   // Get current user data
   const { data: user, isLoading } = useQuery({
@@ -479,6 +482,29 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
                     </div>
                     <Badge variant="default">Active</Badge>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Account Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Settings className="w-5 h-5 mr-2" />
+                    Account Actions
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your account session and data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    variant="outline" 
+                    onClick={logout}
+                    disabled={isLoggingOut}
+                    className="w-full"
+                  >
+                    {isLoggingOut ? "Logging out..." : "Log Out"}
+                  </Button>
                 </CardContent>
               </Card>
 

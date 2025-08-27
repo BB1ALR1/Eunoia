@@ -1,6 +1,6 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
@@ -146,16 +146,22 @@ function AuthenticatedApp() {
 }
 
 function Router() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated, refetchUser } = useAuth();
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
 
   // Show loading spinner while checking authentication
   if (isLoading) {
+    // Check if we have a saved login state for faster loading
+    const savedAuthState = localStorage.getItem("eunoia-auth-state");
+    const hasStoredAuth = savedAuthState ? JSON.parse(savedAuthState).isLoggedIn : false;
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading Eunoia...</p>
+          <p className="text-muted-foreground">
+            {hasStoredAuth ? "Restoring your session..." : "Loading Eunoia..."}
+          </p>
         </div>
       </div>
     );
@@ -167,9 +173,10 @@ function Router() {
   }
 
   // If not authenticated, show login/signup
-  const handleAuthSuccess = () => {
-    // The useAuth hook will automatically refetch and update the user state
-    // No need to do anything else here
+  const handleAuthSuccess = async () => {
+    // Force refetch user data to update authentication state immediately
+    await refetchUser();
+    queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
   };
 
   if (authView === 'login') {
