@@ -133,8 +133,8 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
   };
 
   return (
-    <div className="min-h-screen bg-gradient-neutral">
-      <div className="flex h-screen">
+    <div className="h-screen bg-gradient-neutral">
+      <div className="flex h-full">
         {/* Sidebar */}
         <Sidebar 
           isOpen={isSidebarOpen}

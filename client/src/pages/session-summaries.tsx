@@ -32,7 +32,7 @@ export default function SessionSummariesPage({ onBack }: SessionSummariesPagePro
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-neutral p-6">
+      <div className="h-screen bg-gradient-neutral p-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="sm" onClick={onBack}>
@@ -64,7 +64,7 @@ export default function SessionSummariesPage({ onBack }: SessionSummariesPagePro
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-neutral p-6">
+      <div className="h-screen bg-gradient-neutral p-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="sm" onClick={onBack}>
@@ -87,7 +87,7 @@ export default function SessionSummariesPage({ onBack }: SessionSummariesPagePro
   const completedSessions = sessions.filter(session => session.summary);
 
   return (
-    <div className="min-h-screen bg-gradient-neutral p-6">
+    <div className="h-screen bg-gradient-neutral p-6 overflow-y-auto">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="sm" onClick={onBack}>

@@ -106,8 +106,8 @@ export default function SettingsPage({
   const selectedVoice = voiceOptions.find(v => v.id === tempSettings.selectedVoice);
 
   return (
-    <div className="min-h-screen bg-gradient-neutral">
-      <div className="flex h-screen">
+    <div className="h-screen bg-gradient-neutral">
+      <div className="flex h-full">
         {/* Sidebar */}
         <Sidebar 
           isOpen={isSidebarOpen}

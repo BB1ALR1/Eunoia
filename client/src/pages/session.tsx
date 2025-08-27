@@ -160,8 +160,8 @@ export default function SessionPage({ sessionId, sessionSettings, onPageChange, 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-neutral">
-      <div className="flex h-screen">
+    <div className="h-screen bg-gradient-neutral">
+      <div className="flex h-full">
         {/* Sidebar */}
         <Sidebar 
           isOpen={isSidebarOpen}

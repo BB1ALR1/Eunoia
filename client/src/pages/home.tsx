@@ -63,7 +63,7 @@ export default function Home({ sessionSettings, onPageChange, onSessionStart }: 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-neutral relative overflow-hidden">
+    <div className="h-screen bg-gradient-neutral relative overflow-hidden">
       {/* Sidebar */}
       <Sidebar 
         isOpen={isSidebarOpen}

@@ -138,8 +138,8 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-neutral">
-      <div className="flex h-screen">
+    <div className="h-screen bg-gradient-neutral">
+      <div className="flex h-full">
         {/* Sidebar */}
         <Sidebar 
           isOpen={isSidebarOpen}
@@ -150,7 +150,7 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
         />
         
         {/* Main Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="flex items-center mb-8">
@@ -216,8 +216,8 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <div className="w-32 h-32 rounded-full mx-auto bg-gray-200 flex items-center justify-center">
-                        <Wind className="w-12 h-12 text-gray-400" />
+                      <div className="w-32 h-32 rounded-full mx-auto bg-muted flex items-center justify-center">
+                        <Wind className="w-12 h-12 text-muted-foreground" />
                       </div>
                       <Button onClick={startBreathingExercise} className="mx-auto">
                         Start Exercise
@@ -238,23 +238,23 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
 
                 {/* Other Breathing Techniques */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                  <Card className="border-blue-200 bg-blue-50">
+                  <Card className="border-primary/20 bg-primary/5">
                     <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2">Box Breathing</h4>
+                      <h4 className="font-semibold mb-2 text-foreground">Box Breathing</h4>
                       <p className="text-sm text-muted-foreground mb-3">
                         Inhale 4, Hold 4, Exhale 4, Hold 4
                       </p>
-                      <p className="text-xs">Great for focus and concentration</p>
+                      <p className="text-xs text-foreground">Great for focus and concentration</p>
                     </CardContent>
                   </Card>
                   
-                  <Card className="border-green-200 bg-green-50">
+                  <Card className="border-accent/20 bg-accent/5">
                     <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2">Deep Belly Breathing</h4>
+                      <h4 className="font-semibold mb-2 text-foreground">Deep Belly Breathing</h4>
                       <p className="text-sm text-muted-foreground mb-3">
                         Slow, deep breaths using your diaphragm
                       </p>
-                      <p className="text-xs">Reduces stress and promotes relaxation</p>
+                      <p className="text-xs text-foreground">Reduces stress and promotes relaxation</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -277,16 +277,16 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {thoughtChallengingQuestions.map((question, index) => (
-                    <Card key={index} className="border-purple-200 bg-purple-50">
+                    <Card key={index} className="border-primary/20 bg-primary/5">
                       <CardContent className="p-4">
-                        <p className="text-sm font-medium">{question}</p>
+                        <p className="text-sm font-medium text-foreground">{question}</p>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
                 
-                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <h4 className="font-semibold mb-2 flex items-center">
+                <div className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                  <h4 className="font-semibold mb-2 flex items-center text-foreground">
                     <Target className="w-4 h-4 mr-2" />
                     How to Use
                   </h4>
@@ -314,17 +314,17 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {groundingTechniques.map((technique, index) => (
-                    <Card key={index} className="border-teal-200 bg-teal-50">
+                    <Card key={index} className="border-accent/20 bg-accent/5">
                       <CardContent className="p-6">
-                        <h4 className="font-semibold mb-3">{technique.name}</h4>
+                        <h4 className="font-semibold mb-3 text-foreground">{technique.name}</h4>
                         <p className="text-sm text-muted-foreground">{technique.description}</p>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
                 
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold mb-2 flex items-center">
+                <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                  <h4 className="font-semibold mb-2 flex items-center text-foreground">
                     <Clock className="w-4 h-4 mr-2" />
                     When to Use Grounding
                   </h4>
@@ -350,8 +350,8 @@ export default function CBTToolsPage({ onBack, onPageChange, currentPage, sessio
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {category.strategies.map((strategy, strategyIndex) => (
-                        <div key={strategyIndex} className="flex items-center p-3 border border-gray-200 rounded-lg bg-gray-50">
-                          <span className="text-sm">{strategy}</span>
+                        <div key={strategyIndex} className="flex items-center p-3 border border-border rounded-lg bg-muted/30">
+                          <span className="text-sm text-foreground">{strategy}</span>
                         </div>
                       ))}
                     </div>
