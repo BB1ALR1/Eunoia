@@ -102,6 +102,42 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
     },
   });
 
+  // Profile picture upload mutation
+  const uploadProfilePicMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('profilePic', file);
+      
+      const response = await fetch('/api/auth/upload-profile-pic', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload failed');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Profile Picture Updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+      setProfileData(prev => ({ ...prev, profilePic: data.profilePic }));
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { username: string; email: string; profilePic?: string }) => {
@@ -219,6 +255,34 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
     updateProfileMutation.mutate(profileData);
   };
 
+  const handleProfilePicUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select an image smaller than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please select a valid image file (JPEG, PNG, GIF, or WebP).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    uploadProfilePicMutation.mutate(file);
+  };
+
   const handleDeleteAccount = () => {
     if (!deletePassword) {
       toast({
@@ -299,10 +363,24 @@ export default function AccountPage({ onBack, onPageChange, currentPage, session
                         <User className="w-8 h-8 text-white" />
                       )}
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Camera className="w-4 h-4 mr-2" />
-                      Change Photo
-                    </Button>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfilePicUpload}
+                        className="hidden"
+                        id="profile-pic-upload"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => document.getElementById('profile-pic-upload')?.click()}
+                        disabled={uploadProfilePicMutation.isPending}
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        {uploadProfilePicMutation.isPending ? "Uploading..." : "Change Photo"}
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

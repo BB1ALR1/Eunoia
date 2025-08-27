@@ -162,10 +162,10 @@ export default function SettingsPage({
                     </SelectTrigger>
                     <SelectContent>
                       {therapistPersonalities.map((personality) => (
-                        <SelectItem key={personality.id} value={personality.id}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{personality.name}</span>
-                            <span className="text-sm text-muted-foreground">{personality.description}</span>
+                        <SelectItem key={personality.id} value={personality.id} className="h-auto py-3">
+                          <div className="flex flex-col space-y-1 text-left">
+                            <span className="font-medium text-foreground">{personality.name}</span>
+                            <span className="text-sm text-muted-foreground leading-tight">{personality.description}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -197,10 +197,10 @@ export default function SettingsPage({
                     </SelectTrigger>
                     <SelectContent>
                       {voiceOptions.map((voice) => (
-                        <SelectItem key={voice.id} value={voice.id}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{voice.name}</span>
-                            <span className="text-sm text-muted-foreground">{voice.description}</span>
+                        <SelectItem key={voice.id} value={voice.id} className="h-auto py-3">
+                          <div className="flex flex-col space-y-1 text-left">
+                            <span className="font-medium text-foreground">{voice.name}</span>
+                            <span className="text-sm text-muted-foreground leading-tight">{voice.description}</span>
                           </div>
                         </SelectItem>
                       ))}

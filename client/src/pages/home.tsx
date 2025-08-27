@@ -63,7 +63,7 @@ export default function Home({ sessionSettings, onPageChange, onSessionStart }: 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-neutral relative overflow-hidden">
       {/* Sidebar */}
       <Sidebar 
         isOpen={isSidebarOpen}
@@ -82,7 +82,7 @@ export default function Home({ sessionSettings, onPageChange, onSessionStart }: 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50 p-4">
+        <div className="bg-background/80 backdrop-blur-sm shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button

@@ -190,7 +190,7 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
     },
     {
       id: "settings",
-      label: "Settings",
+      label: "Session Settings",
       icon: Settings,
       active: activeSection === "settings",
       action: () => handleNavigation('settings')
@@ -408,7 +408,7 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
       
       {/* Sidebar */}
       <div className={`
-        fixed z-50 h-full bg-white shadow-lg border-r border-border
+        fixed z-50 h-full bg-background shadow-lg border-r border-border
         w-80 transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
