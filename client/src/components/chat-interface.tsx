@@ -54,9 +54,9 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="h-full flex flex-col">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0">
+      <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">

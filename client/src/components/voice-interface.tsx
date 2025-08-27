@@ -120,7 +120,7 @@ export default function VoiceInterface({
   const latestAIMessage = messages.filter(m => m.role === 'assistant').slice(-1)[0];
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
+    <div className="h-full flex flex-col items-center justify-center p-8 space-y-8">
       <div className="max-w-2xl mx-auto text-center">
         
         {/* Therapist Avatar */}

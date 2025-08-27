@@ -224,7 +224,7 @@ export default function SessionPage({ sessionId, sessionSettings, onPageChange, 
           </div>
 
           {/* Chat Interface */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 min-h-0">
             {isVoiceMode ? (
               <VoiceInterface
                 therapistName={getTherapistName()}
