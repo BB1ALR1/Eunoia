@@ -147,7 +147,7 @@ export default function ChatInterface({
       </div>
       
       {/* Input Area */}
-      <div className="border-t border-border p-4 bg-white">
+      <div className="border-t border-border p-4 bg-background dark:bg-background">
         <div className="flex items-center space-x-3">
           <div className="flex-1">
             <Input
@@ -157,7 +157,7 @@ export default function ChatInterface({
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
               disabled={isLoading}
-              className="pr-12"
+              className="pr-12 bg-background border-border"
             />
           </div>
           <Button
