@@ -69,6 +69,11 @@
     @apply font-sans antialiased text-foreground;
     background: var(--background);
     min-height: 100vh;
+    height: 100vh;
+  }
+  
+  html {
+    height: 100%;
   }
 }
 

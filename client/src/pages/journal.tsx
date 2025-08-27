@@ -145,7 +145,7 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
         />
         
         {/* Main Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="flex items-center mb-8">

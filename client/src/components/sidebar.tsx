@@ -448,9 +448,11 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
             })}
           </nav>
           
-          {/* Content Area */}
-          <div className="flex-1 px-4 pb-4 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-border scrollbar-track-background">
-            {renderContent()}
+          {/* Content Area - This should scroll when content overflows */}
+          <div className="flex-1 px-4 pb-4 overflow-y-auto min-h-0">
+            <div className="space-y-4">
+              {renderContent()}
+            </div>
           </div>
           
           {/* Crisis Support */}
