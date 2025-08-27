@@ -359,7 +359,7 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
           <div className="space-y-4">
             <div>
               <h4 className="font-medium mb-3">CBT Coping Tools</h4>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-80 overflow-y-auto">
                 {cbtTools.map((tool, index) => (
                   <Button
                     key={index}
@@ -449,7 +449,7 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
           </nav>
           
           {/* Content Area */}
-          <div className="flex-1 px-4 pb-4 overflow-y-auto">
+          <div className="flex-1 px-4 pb-4 overflow-y-auto min-h-0">
             {renderContent()}
           </div>
           
