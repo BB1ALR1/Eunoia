@@ -264,27 +264,37 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
               </div>
 
               {/* Prompts Sidebar */}
-              <div>
+              <div className="space-y-4">
                 <Card className="sticky top-6">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Writing Prompts</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center">
+                      <span className="w-5 h-5 mr-2 text-primary">💡</span>
+                      Writing Prompts
+                    </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Use these prompts to get started with your journaling
+                      Click any prompt to start writing
                     </p>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {journalPrompts.map((prompt, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          size="sm"
-                          className="w-full justify-start text-left h-auto py-3 px-3"
-                          onClick={() => handlePromptSelect(prompt)}
-                        >
-                          <span className="text-sm">{prompt}</span>
-                        </Button>
-                      ))}
+                  <CardContent className="space-y-3">
+                    {journalPrompts.map((prompt, index) => (
+                      <div
+                        key={index}
+                        className="group cursor-pointer p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+                        onClick={() => handlePromptSelect(prompt)}
+                      >
+                        <div className="flex items-start space-x-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-2 flex-shrink-0"></div>
+                          <p className="text-sm text-foreground group-hover:text-primary transition-colors leading-relaxed">
+                            {prompt}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-dashed border-border">
+                      <p className="text-xs text-muted-foreground text-center">
+                        💡 Tip: Prompts help you explore your thoughts and feelings when you're not sure where to start
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

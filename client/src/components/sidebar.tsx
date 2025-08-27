@@ -413,12 +413,12 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full max-h-screen">
-          {/* Header */}
-          <div className="p-6 border-b border-border flex-shrink-0">
+          {/* Fixed Header */}
+          <div className="p-4 border-b border-border flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-primary">Eunoia</h2>
-                <p className="text-sm text-muted-foreground">Your AI Therapeutic Companion</p>
+                <h2 className="text-lg font-bold text-primary">Eunoia</h2>
+                <p className="text-xs text-muted-foreground">Your AI Therapeutic Companion</p>
               </div>
               <Button
                 variant="ghost"
@@ -430,45 +430,48 @@ export default function Sidebar({ isOpen, onClose, sessionId, onPageChange, curr
             </div>
           </div>
           
-          {/* Navigation */}
-          <nav className="p-4 space-y-2 flex-shrink-0">
-            {menuItems.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <Button
-                  key={item.id}
-                  variant={item.active ? "default" : "ghost"}
-                  className="w-full justify-start space-x-3 h-12"
-                  onClick={item.action}
-                >
-                  <IconComponent className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </Button>
-              );
-            })}
-          </nav>
-          
-          {/* Content Area - This should scroll when content overflows */}
-          <div className="flex-1 px-4 pb-4 overflow-y-auto min-h-0">
-            <div className="space-y-4">
-              {renderContent()}
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="space-y-4 p-4">
+              {/* Navigation */}
+              <nav className="space-y-2">
+                {menuItems.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <Button
+                      key={item.id}
+                      variant={item.active ? "default" : "ghost"}
+                      className="w-full justify-start space-x-3 h-12"
+                      onClick={item.action}
+                    >
+                      <IconComponent className="h-5 w-5" />
+                      <span>{item.label}</span>
+                    </Button>
+                  );
+                })}
+              </nav>
+              
+              {/* Additional Content */}
+              <div className="space-y-4">
+                {renderContent()}
+              </div>
+              
+              {/* Crisis Support */}
+              <div className="mt-6">
+                <Card className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800">
+                  <CardContent className="p-3">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Phone className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <span className="font-semibold text-red-800 dark:text-red-200 text-sm">Crisis Support</span>
+                    </div>
+                    <div className="space-y-1 text-xs">
+                      <div className="font-medium text-red-800 dark:text-red-200">988 - Suicide & Crisis Lifeline</div>
+                      <div className="font-medium text-red-800 dark:text-red-200">911 - Emergency Services</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-          
-          {/* Crisis Support */}
-          <div className="p-4 border-t border-border flex-shrink-0">
-            <Card className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800">
-              <CardContent className="p-3">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Phone className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  <span className="font-semibold text-red-800 dark:text-red-200 text-sm">Crisis Support</span>
-                </div>
-                <div className="space-y-1 text-xs">
-                  <div className="font-medium text-red-800 dark:text-red-200">988 - Suicide & Crisis Lifeline</div>
-                  <div className="font-medium text-red-800 dark:text-red-200">911 - Emergency Services</div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
