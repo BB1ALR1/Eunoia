@@ -183,19 +183,19 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
                       Click any prompt to start writing
                     </p>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-2 overflow-hidden">
                     {journalPrompts.map((prompt, index) => (
                       <Button
                         key={index}
                         variant="outline"
-                        className="w-full text-left justify-start h-auto py-3 px-4 text-sm font-normal bg-background hover:bg-primary/10 hover:text-primary hover:border-primary/50 border-border dark:bg-background dark:hover:bg-primary/10 dark:border-border dark:hover:border-primary/50 transition-all duration-200 break-words"
+                        className="w-full text-left justify-start h-auto py-3 px-4 text-sm font-normal bg-background hover:bg-primary/10 hover:text-primary hover:border-primary/50 border-border dark:bg-background dark:hover:bg-primary/10 dark:border-border dark:hover:border-primary/50 transition-all duration-200 whitespace-normal"
                         onClick={() => handlePromptSelect(prompt)}
                       >
                         <div className="flex items-start space-x-3 w-full min-w-0">
                           <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-2 flex-shrink-0"></div>
-                          <span className="leading-relaxed text-left flex-1 break-words overflow-wrap-anywhere">
+                          <div className="leading-relaxed text-left flex-1 min-w-0 break-words overflow-hidden">
                             {prompt}
-                          </span>
+                          </div>
                         </div>
                       </Button>
                     ))}
@@ -280,7 +280,7 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
                             <div className="flex items-center space-x-2">
                               <div className="flex items-center text-sm text-muted-foreground">
                                 <Calendar className="w-4 h-4 mr-1" />
-                                {formatDate(entry.createdAt)}
+                                {formatDate(entry.createdAt || new Date())}
                               </div>
                               <Button
                                 variant="ghost"

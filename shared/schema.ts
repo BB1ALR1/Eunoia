@@ -57,6 +57,7 @@ export const journalEntries = pgTable("journal_entries", {
   sessionId: integer("session_id"),
   title: text("title"),
   content: text("content").notNull(),
+  prompt: text("prompt"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
