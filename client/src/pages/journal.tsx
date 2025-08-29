@@ -171,46 +171,8 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6">
-              {/* Prompts Sidebar - Show first on mobile */}
-              <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-4 order-1 lg:order-2">
-                <Card className="lg:sticky lg:top-6">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center">
-                      <span className="w-5 h-5 mr-2 text-primary">💡</span>
-                      Writing Prompts
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Click any prompt to start writing
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-2 overflow-hidden">
-                    {journalPrompts.map((prompt, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        className="w-full text-left justify-start h-auto py-3 px-4 text-sm font-normal bg-background hover:bg-primary/10 hover:text-primary hover:border-primary/50 border-border dark:bg-background dark:hover:bg-primary/10 dark:border-border dark:hover:border-primary/50 transition-all duration-200 whitespace-normal"
-                        onClick={() => handlePromptSelect(prompt)}
-                      >
-                        <div className="flex items-start space-x-3 w-full min-w-0">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-2 flex-shrink-0"></div>
-                          <div className="leading-relaxed text-left flex-1 min-w-0 break-words overflow-hidden">
-                            {prompt}
-                          </div>
-                        </div>
-                      </Button>
-                    ))}
-                    
-                    <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-dashed border-border">
-                      <p className="text-xs text-muted-foreground text-center break-words">
-                        💡 Tip: Prompts help you explore your thoughts and feelings when you're not sure where to start
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
               {/* New Entry Form */}
-              <div className="flex-1 lg:flex-[2] order-2 lg:order-1">
+              <div className="flex-1 lg:flex-[2]">
                 <Card className="mb-6">
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -299,6 +261,44 @@ export default function JournalPage({ sessionId, onBack, onPageChange, currentPa
                     ))
                   )}
                 </div>
+              </div>
+
+              {/* Prompts Sidebar */}
+              <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-4">
+                <Card className="lg:sticky lg:top-6">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center">
+                      <span className="w-5 h-5 mr-2 text-primary">💡</span>
+                      Writing Prompts
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Click any prompt to start writing
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-2 overflow-hidden">
+                    {journalPrompts.map((prompt, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        className="w-full text-left justify-start h-auto py-3 px-4 text-sm font-normal bg-background hover:bg-primary/10 hover:text-primary hover:border-primary/50 border-border dark:bg-background dark:hover:bg-primary/10 dark:border-border dark:hover:border-primary/50 transition-all duration-200 whitespace-normal"
+                        onClick={() => handlePromptSelect(prompt)}
+                      >
+                        <div className="flex items-start space-x-3 w-full min-w-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-2 flex-shrink-0"></div>
+                          <div className="leading-relaxed text-left flex-1 min-w-0 break-words overflow-hidden">
+                            {prompt}
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                    
+                    <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-dashed border-border">
+                      <p className="text-xs text-muted-foreground text-center break-words">
+                        💡 Tip: Prompts help you explore your thoughts and feelings when you're not sure where to start
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
             </div>
