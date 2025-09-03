@@ -1,0 +1,894 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eunoia - AI Therapy Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6B73FF',
+                        secondary: '#9C27B0',
+                        accent: '#4CAF50',
+                        crisis: '#FF6B6B',
+                        warning: '#FFB74D'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="font-inter bg-gray-50">
+    <!-- @COMPONENT: OnboardingFlow [multi-step wizard with personality selection] -->
+    <div id="onboarding-flow" class="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10">
+        <!-- Step 1: Welcome -->
+        <div id="step-welcome" class="onboarding-step active">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold text-primary mb-2">Eunoia</h1>
+                        <p class="text-gray-600 text-lg">Your AI Therapy Companion</p>
+                    </div>
+                    
+                    <!-- Animated therapy illustration placeholder -->
+                    <div class="mb-8 p-6 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl">
+                        <i class="fas fa-brain text-6xl text-primary mb-4"></i>
+                        <p class="text-gray-700 font-medium">Compassionate AI-powered therapy<br>available 24/7</p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center space-x-3 text-left">
+                            <i class="fas fa-microphone-alt text-primary"></i>
+                            <span class="text-gray-700">Voice & chat conversations</span>
+                        </div>
+                        <div class="flex items-center space-x-3 text-left">
+                            <i class="fas fa-heart text-primary"></i>
+                            <span class="text-gray-700">CBT-based coping strategies</span>
+                        </div>
+                        <div class="flex items-center space-x-3 text-left">
+                            <i class="fas fa-shield-alt text-primary"></i>
+                            <span class="text-gray-700">Privacy-first approach</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg hover:bg-primary/90 transition-colors" data-event="click:startOnboarding">
+                        Get Started
+                    </button>
+                    
+                    <p class="text-xs text-gray-500 mt-4">
+                        By continuing, you agree to our Terms of Service and Privacy Policy.
+                        This is not a replacement for professional therapy.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Therapist Personality Selection -->
+        <div id="step-personality" class="onboarding-step hidden">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Choose Your Therapist</h2>
+                        <p class="text-gray-600">Select a personality that feels right for you</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
+                            <div class="bg-primary h-2 rounded-full w-1/4"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- @MAP: therapistPersonalities.map(personality => ( -->
+                        <div class="personality-card border-2 border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-personality="empathetic">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-heart text-3xl text-primary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">Dr. Emma</h3>
+                                <p class="text-gray-600 text-sm mb-3">Empathetic & Nurturing</p>
+                                <p class="text-gray-500 text-xs">Warm, understanding, and emotionally supportive. Great for processing feelings and building self-compassion.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="personality-card border-2 border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-personality="analytical">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-brain text-3xl text-primary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">Dr. Alex</h3>
+                                <p class="text-gray-600 text-sm mb-3">Analytical & Structured</p>
+                                <p class="text-gray-500 text-xs">Logical, systematic approach to problem-solving. Excellent for CBT techniques and goal-oriented therapy.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="personality-card border-2 border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-personality="motivational">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-rocket text-3xl text-primary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">Dr. Maya</h3>
+                                <p class="text-gray-600 text-sm mb-3">Motivational & Energizing</p>
+                                <p class="text-gray-500 text-xs">Encouraging and action-oriented. Perfect for building confidence and overcoming challenges.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="personality-card border-2 border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-personality="mindful">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-lotus text-3xl text-primary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">Dr. Sam</h3>
+                                <p class="text-gray-600 text-sm mb-3">Mindful & Calming</p>
+                                <p class="text-gray-500 text-xs">Peaceful, grounding presence. Specializes in mindfulness, anxiety management, and stress reduction.</p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP -->
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors" data-event="click:previousStep">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </button>
+                        <button class="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50" id="next-personality" disabled data-event="click:nextStep">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Voice Selection -->
+        <div id="step-voice" class="onboarding-step hidden">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Choose Your Voice</h2>
+                        <p class="text-gray-600">Select a voice that feels comfortable for you</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
+                            <div class="bg-primary h-2 rounded-full w-2/4"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-xl">
+                            <h3 class="font-semibold text-gray-800 mb-3">Female Voices</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="voice-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-voice="female-1">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-circle text-2xl text-primary mb-2"></i>
+                                        <p class="font-medium text-sm">Sarah</p>
+                                        <p class="text-xs text-gray-500">Warm & Professional</p>
+                                        <button class="mt-2 text-xs text-primary hover:text-primary/80">
+                                            <i class="fas fa-play mr-1"></i>Preview
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="voice-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-voice="female-2">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-circle text-2xl text-primary mb-2"></i>
+                                        <p class="font-medium text-sm">Jessica</p>
+                                        <p class="text-xs text-gray-500">Calm & Soothing</p>
+                                        <button class="mt-2 text-xs text-primary hover:text-primary/80">
+                                            <i class="fas fa-play mr-1"></i>Preview
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="voice-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-voice="female-3">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-circle text-2xl text-primary mb-2"></i>
+                                        <p class="font-medium text-sm">Maria</p>
+                                        <p class="text-xs text-gray-500">Gentle & Caring</p>
+                                        <button class="mt-2 text-xs text-primary hover:text-primary/80">
+                                            <i class="fas fa-play mr-1"></i>Preview
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-xl">
+                            <h3 class="font-semibold text-gray-800 mb-3">Male Voices</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="voice-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-voice="male-1">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-circle text-2xl text-primary mb-2"></i>
+                                        <p class="font-medium text-sm">David</p>
+                                        <p class="text-xs text-gray-500">Confident & Clear</p>
+                                        <button class="mt-2 text-xs text-primary hover:text-primary/80">
+                                            <i class="fas fa-play mr-1"></i>Preview
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="voice-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-voice="male-2">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-circle text-2xl text-primary mb-2"></i>
+                                        <p class="font-medium text-sm">Michael</p>
+                                        <p class="text-xs text-gray-500">Deep & Reassuring</p>
+                                        <button class="mt-2 text-xs text-primary hover:text-primary/80">
+                                            <i class="fas fa-play mr-1"></i>Preview
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="voice-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-voice="male-3">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-circle text-2xl text-primary mb-2"></i>
+                                        <p class="font-medium text-sm">James</p>
+                                        <p class="text-xs text-gray-500">Friendly & Approachable</p>
+                                        <button class="mt-2 text-xs text-primary hover:text-primary/80">
+                                            <i class="fas fa-play mr-1"></i>Preview
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors" data-event="click:previousStep">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </button>
+                        <button class="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50" id="next-voice" disabled data-event="click:nextStep">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Goal Setting -->
+        <div id="step-goals" class="onboarding-step hidden">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">What brings you here?</h2>
+                        <p class="text-gray-600">Help us understand your therapy goals</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
+                            <div class="bg-primary h-2 rounded-full w-3/4"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="goal-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-goal="anxiety">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-brain text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Manage Anxiety</h3>
+                                    <p class="text-gray-600 text-sm">Learn coping strategies for anxiety and worry</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-goal="depression">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-heart text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Overcome Depression</h3>
+                                    <p class="text-gray-600 text-sm">Work through feelings of sadness and low mood</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-goal="stress">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-leaf text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Reduce Stress</h3>
+                                    <p class="text-gray-600 text-sm">Find healthy ways to manage daily stress</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-goal="relationships">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-users text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Improve Relationships</h3>
+                                    <p class="text-gray-600 text-sm">Build healthier connections with others</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-goal="self-esteem">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-star text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Build Self-Esteem</h3>
+                                    <p class="text-gray-600 text-sm">Develop a more positive self-image</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-option border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" data-goal="general">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-compass text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">General Support</h3>
+                                    <p class="text-gray-600 text-sm">Just need someone to talk to</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Anything else you'd like to share? (Optional)</label>
+                        <textarea class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Tell us more about what you're hoping to work on..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors" data-event="click:previousStep">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </button>
+                        <button class="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50" id="next-goals" disabled data-event="click:nextStep">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Confirmation -->
+        <div id="step-confirmation" class="onboarding-step hidden">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Ready to Begin</h2>
+                        <p class="text-gray-600">Review your preferences</p>
+                        <div class="w-full bg-primary rounded-full h-2 mt-4"></div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 p-6 rounded-2xl">
+                            <h3 class="font-semibold text-gray-800 mb-4">Your Therapy Setup</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Therapist:</span>
+                                    <span class="font-medium" data-bind="selectedPersonality">Dr. Emma (Empathetic)</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Voice:</span>
+                                    <span class="font-medium" data-bind="selectedVoice">Sarah (Warm & Professional)</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Primary Goal:</span>
+                                    <span class="font-medium" data-bind="selectedGoal">Manage Anxiety</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                                <div>
+                                    <h4 class="font-semibold text-blue-900 mb-2">Important Notice</h4>
+                                    <p class="text-blue-800 text-sm mb-3">
+                                        Eunoia is an AI assistant designed to provide support using evidence-based therapeutic techniques. 
+                                        It is not a replacement for professional mental health treatment.
+                                    </p>
+                                    <div class="space-y-2 text-sm text-blue-700">
+                                        <p>• If you're experiencing a mental health crisis, please call 988 (Suicide & Crisis Lifeline)</p>
+                                        <p>• For emergencies, call 911</p>
+                                        <p>• Consider professional therapy for serious mental health concerns</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 border border-green-200 rounded-2xl p-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-shield-alt text-green-600 mt-1"></i>
+                                <div>
+                                    <h4 class="font-semibold text-green-900 mb-2">Your Privacy Matters</h4>
+                                    <p class="text-green-800 text-sm">
+                                        Your conversations are encrypted and private. We follow strict privacy standards 
+                                        and never share your personal information.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button class="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors" data-event="click:previousStep">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </button>
+                        <button class="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-2xl font-semibold text-lg hover:from-primary/90 hover:to-secondary/90 transition-all" data-event="click:startSession">
+                            Start Your Session
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: OnboardingFlow -->
+
+    <!-- @COMPONENT: MainTherapyInterface [voice/chat toggle with large interaction area] -->
+    <div id="main-interface" class="hidden min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-4xl mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <h1 class="text-2xl font-bold text-primary">Eunoia</h1>
+                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span data-bind="therapistName">Dr. Emma</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Voice/Chat Toggle -->
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3 bg-gray-100 rounded-full p-1">
+                            <button class="mode-toggle active px-4 py-2 rounded-full text-sm font-medium transition-all" data-mode="voice">
+                                <i class="fas fa-microphone mr-2"></i>Voice
+                            </button>
+                            <button class="mode-toggle px-4 py-2 rounded-full text-sm font-medium transition-all" data-mode="chat">
+                                <i class="fas fa-comments mr-2"></i>Chat
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <button class="p-2 text-gray-600 hover:text-gray-800 transition-colors">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <button class="p-2 text-gray-600 hover:text-gray-800 transition-colors">
+                                <i class="fas fa-question-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Voice Interface -->
+        <div id="voice-interface" class="voice-mode active">
+            <div class="max-w-4xl mx-auto px-4 py-8">
+                <!-- Session Status -->
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center space-x-2 bg-white rounded-full px-4 py-2 shadow-sm">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-gray-600">Session Active</span>
+                        <span class="text-sm font-medium text-gray-800" data-bind="sessionTime">12:34</span>
+                    </div>
+                </div>
+                
+                <!-- Voice Visualization -->
+                <div class="text-center mb-8">
+                    <div class="relative">
+                        <!-- Voice waveform placeholder -->
+                        <div class="flex items-center justify-center space-x-1 h-24 mb-4">
+                            <div class="w-2 bg-primary rounded-full h-8 animate-pulse"></div>
+                            <div class="w-2 bg-primary rounded-full h-16 animate-pulse" style="animation-delay: 0.1s"></div>
+                            <div class="w-2 bg-primary rounded-full h-12 animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 bg-primary rounded-full h-20 animate-pulse" style="animation-delay: 0.3s"></div>
+                            <div class="w-2 bg-primary rounded-full h-6 animate-pulse" style="animation-delay: 0.4s"></div>
+                            <div class="w-2 bg-primary rounded-full h-14 animate-pulse" style="animation-delay: 0.5s"></div>
+                            <div class="w-2 bg-primary rounded-full h-10 animate-pulse" style="animation-delay: 0.6s"></div>
+                        </div>
+                        
+                        <!-- AI Response Status -->
+                        <div class="text-gray-600 text-sm" data-bind="aiStatus">
+                            <i class="fas fa-robot mr-2"></i>Dr. Emma is listening...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Large Talk Button -->
+                <div class="text-center mb-8">
+                    <button id="talk-button" class="relative w-48 h-48 bg-gradient-to-br from-primary to-secondary rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 group" data-event="click:toggleTalk">
+                        <div class="absolute inset-4 bg-white rounded-full flex items-center justify-center group-hover:inset-3 transition-all duration-300">
+                            <i class="fas fa-microphone text-4xl text-primary group-hover:text-5xl transition-all duration-300"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </button>
+                    
+                    <div class="mt-4">
+                        <p class="text-lg font-medium text-gray-800 mb-2">Tap to speak</p>
+                        <p class="text-sm text-gray-600">Hold for continuous conversation</p>
+                    </div>
+                </div>
+                
+                <!-- Recent Conversation -->
+                <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Conversation</h3>
+                    <div class="space-y-4" data-mock="true">
+                        <!-- @MAP: recentMessages.map(message => ( -->
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-gray-800">I've been feeling really anxious about work lately. It's affecting my sleep.</p>
+                                <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-primary text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-gray-800">I hear that you're experiencing anxiety about work, and it's impacting your sleep. That sounds really challenging. Can you tell me more about what specifically at work is causing you the most worry?</p>
+                                <p class="text-xs text-gray-500 mt-1">1 minute ago</p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP -->
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left" data-event="click:quickAction" data-action="breathing">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-lungs text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Breathing Exercise</h4>
+                                <p class="text-sm text-gray-600">5-minute guided session</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left" data-event="click:quickAction" data-action="journal">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-journal-whills text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Mood Journal</h4>
+                                <p class="text-sm text-gray-600">Log your feelings</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow text-left" data-event="click:quickAction" data-action="coping">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-toolbox text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Coping Strategies</h4>
+                                <p class="text-sm text-gray-600">CBT techniques</p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div id="chat-interface" class="chat-mode hidden">
+            <div class="max-w-4xl mx-auto px-4 py-8 h-[calc(100vh-80px)] flex flex-col">
+                <!-- Chat Messages -->
+                <div class="flex-1 bg-white rounded-2xl shadow-sm mb-4 overflow-hidden flex flex-col">
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800" data-bind="therapistName">Dr. Emma</h3>
+                                <p class="text-sm text-gray-600">Your AI Therapist</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4" data-mock="true">
+                        <!-- @MAP: chatMessages.map(message => ( -->
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-primary text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="bg-gray-100 rounded-2xl rounded-tl-lg p-4 max-w-md">
+                                    <p class="text-gray-800">Hello! I'm Dr. Emma, your AI therapy assistant. I'm here to provide you with a safe, supportive space to talk about whatever is on your mind. How are you feeling today?</p>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 ml-4">Now</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3 justify-end">
+                            <div class="flex-1 flex justify-end">
+                                <div class="bg-primary text-white rounded-2xl rounded-tr-lg p-4 max-w-md">
+                                    <p>Hi Dr. Emma. I've been having trouble sleeping and feeling anxious about work. I'm not sure how to manage these feelings.</p>
+                                </div>
+                            </div>
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600 text-sm"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-primary text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="bg-gray-100 rounded-2xl rounded-tl-lg p-4 max-w-md">
+                                    <p class="text-gray-800">Thank you for sharing that with me. It takes courage to reach out when you're struggling. Sleep troubles and work anxiety often go hand in hand. Let's explore this together. 
+                                    
+                                    Can you tell me what specifically about work is causing you the most anxiety right now?</p>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 ml-4">Just now</p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP -->
+                    </div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="bg-white rounded-2xl shadow-sm p-4">
+                    <div class="flex items-end space-x-3">
+                        <div class="flex-1">
+                            <textarea class="w-full resize-none border-0 focus:ring-0 focus:outline-none placeholder-gray-500 p-3 bg-gray-50 rounded-xl" rows="3" placeholder="Type your message here..." data-implementation="Should handle Enter key for send, Shift+Enter for new line"></textarea>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <button class="p-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors" data-event="click:sendMessage">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button class="p-3 bg-gray-200 text-gray-600 rounded-xl hover:bg-gray-300 transition-colors" data-event="click:switchToVoice">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                        <div class="flex items-center space-x-3">
+                            <button class="text-gray-600 hover:text-gray-800 transition-colors" data-event="click:attachFile">
+                                <i class="fas fa-paperclip mr-1"></i>
+                                <span class="text-sm">Attach</span>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-800 transition-colors" data-event="click:useTemplate">
+                                <i class="fas fa-magic mr-1"></i>
+                                <span class="text-sm">Templates</span>
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-shield-alt mr-1"></i>
+                            End-to-end encrypted
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crisis Support Modal -->
+        <div id="crisis-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-heart text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">We're Here for You</h3>
+                    <p class="text-gray-600">If you're in crisis or need immediate support, please reach out to these resources:</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <a href="tel:988" class="flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors">
+                        <i class="fas fa-phone text-red-600"></i>
+                        <div>
+                            <h4 class="font-semibold text-red-800">988 Suicide & Crisis Lifeline</h4>
+                            <p class="text-sm text-red-600">24/7 emotional support</p>
+                        </div>
+                    </a>
+                    
+                    <a href="tel:911" class="flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors">
+                        <i class="fas fa-ambulance text-red-600"></i>
+                        <div>
+                            <h4 class="font-semibold text-red-800">911 Emergency Services</h4>
+                            <p class="text-sm text-red-600">For immediate emergencies</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://suicidepreventionlifeline.org/chat/" class="flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors">
+                        <i class="fas fa-comments text-blue-600"></i>
+                        <div>
+                            <h4 class="font-semibold text-blue-800">Crisis Text Line</h4>
+                            <p class="text-sm text-blue-600">Text HOME to 741741</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="mt-6 flex space-x-3">
+                    <button class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors" data-event="click:closeCrisisModal">
+                        I'm OK
+                    </button>
+                    <button class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors" data-event="click:continueSession">
+                        Continue Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MainTherapyInterface -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Mock onboarding flow functionality
+            let currentStep = 0;
+            const steps = ['welcome', 'personality', 'voice', 'goals', 'confirmation'];
+            let selectedPersonality = '';
+            let selectedVoice = '';
+            let selectedGoals = [];
+            
+            // UI state management
+            let currentMode = 'voice';
+            let isTalking = false;
+            
+            // Initialize the application
+            function init() {
+                setupOnboardingFlow();
+                setupMainInterface();
+                setupCrisisSupport();
+            }
+            
+            function setupOnboardingFlow() {
+                // Personality selection
+                document.querySelectorAll('.personality-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        document.querySelectorAll('.personality-card').forEach(c => c.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedPersonality = this.dataset.personality;
+                        document.getElementById('next-personality').disabled = false;
+                    });
+                });
+                
+                // Voice selection
+                document.querySelectorAll('.voice-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        document.querySelectorAll('.voice-option').forEach(o => o.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedVoice = this.dataset.voice;
+                        document.getElementById('next-voice').disabled = false;
+                    });
+                });
+                
+                // Goal selection
+                document.querySelectorAll('.goal-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        this.classList.toggle('selected');
+                        const goal = this.dataset.goal;
+                        if (selectedGoals.includes(goal)) {
+                            selectedGoals = selectedGoals.filter(g => g !== goal);
+                        } else {
+                            selectedGoals.push(goal);
+                        }
+                        document.getElementById('next-goals').disabled = selectedGoals.length === 0;
+                    });
+                });
+            }
+            
+            function setupMainInterface() {
+                // Mode toggle
+                document.querySelectorAll('.mode-toggle').forEach(toggle => {
+                    toggle.addEventListener('click', function() {
+                        const mode = this.dataset.mode;
+                        switchMode(mode);
+                    });
+                });
+                
+                // Talk button
+                const talkButton = document.getElementById('talk-button');
+                if (talkButton) {
+                    talkButton.addEventListener('click', function() {
+                        toggleTalk();
+                    });
+                }
+            }
+            
+            function switchMode(mode) {
+                currentMode = mode;
+                
+                // Update toggle buttons
+                document.querySelectorAll('.mode-toggle').forEach(toggle => {
+                    toggle.classList.remove('active');
+                    if (toggle.dataset.mode === mode) {
+                        toggle.classList.add('active');
+                    }
+                });
+                
+                // Show/hide interfaces
+                if (mode === 'voice') {
+                    document.getElementById('voice-interface').classList.remove('hidden');
+                    document.getElementById('chat-interface').classList.add('hidden');
+                } else {
+                    document.getElementById('voice-interface').classList.add('hidden');
+                    document.getElementById('chat-interface').classList.remove('hidden');
+                }
+            }
+            
+            function toggleTalk() {
+                isTalking = !isTalking;
+                const talkButton = document.getElementById('talk-button');
+                
+                if (isTalking) {
+                    talkButton.classList.add('recording');
+                    // TODO: Start voice recording
+                } else {
+                    talkButton.classList.remove('recording');
+                    // TODO: Stop voice recording and process
+                }
+            }
+            
+            function setupCrisisSupport() {
+                // TODO: Implement crisis detection and intervention
+                // This would analyze user input for crisis indicators
+            }
+            
+            // Start the application
+            init();
+            
+            // Global event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('[data-event]')) {
+                    const event = e.target.dataset.event;
+                    const [eventType, handler] = event.split(':');
+                    
+                    if (eventType === 'click') {
+                        switch(handler) {
+                            case 'startOnboarding':
+                                showStep('personality');
+                                break;
+                            case 'nextStep':
+                                nextStep();
+                                break;
+                            case 'previousStep':
+                                previousStep();
+                                break;
+                            case 'startSession':
+                                startMainSession();
+                                break;
+                            default:
+                                console.log('Unhandled event:', handler);
+                        }
+                    }
+                }
+            });
+            
+            function showStep(stepName) {
+                document.querySelectorAll('.onboarding-step').forEach(step => {
+                    step.classList.add('hidden');
+                });
+                document.getElementById(`step-${stepName}`).classList.remove('hidden');
+            }
+            
+            function nextStep() {
+                currentStep++;
+                if (currentStep < steps.length) {
+                    showStep(steps[currentStep]);
+                }
+            }
+            
+            function previousStep() {
+                currentStep--;
+                if (currentStep >= 0) {
+                    showStep(steps[currentStep]);
+                }
+            }
+            
+            function startMainSession() {
+                document.getElementById('onboarding-flow').classList.add('hidden');
+                document.getElementById('main-interface').classList.remove('hidden');
+            }
+        })();
+    </script>
+</body>
+</html>

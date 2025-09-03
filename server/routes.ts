@@ -1,14 +1,16 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "../shared/db";
-import { sessions, messages, users, journalEntries, moodEntries, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema } from "../shared/schema";
-import { eq, desc, or } from "drizzle-orm";
+import { sessions, messages, users, journalEntries, moodEntries, passwordResetTokens, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema, insertPasswordResetTokenSchema } from "../shared/schema";
+import { eq, desc, or, and, lt, gt } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 // Extend session types
 declare module 'express-session' {
@@ -755,6 +757,192 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting account:", error);
       res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
+  // Password Reset Routes
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Please enter a valid email address" });
+      }
+
+      // Check if user exists
+      const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (!user) {
+        // Don't reveal if email exists or not for security
+        return res.json({ message: "If an account with that email exists, a password reset link has been sent" });
+      }
+
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Save reset token to database
+      await db.insert(passwordResetTokens).values({
+        userId: user.id,
+        token: resetToken,
+        email: user.email,
+        expiresAt: expiresAt,
+        used: false
+      });
+
+      // Configure email transport
+      const resetUrl = `http://localhost:5000/reset-password?token=${resetToken}`;
+      
+      // Send email using Outlook with proper SMTP settings
+      try {
+        const transporter = nodemailer.createTransport({
+          host: 'smtp-mail.outlook.com',
+          port: 587,
+          secure: false, // true for 465, false for other ports
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          },
+          tls: {
+            ciphers: 'SSLv3',
+            rejectUnauthorized: false
+          }
+        });
+
+        const mailOptions = {
+          from: process.env.FROM_EMAIL || process.env.EMAIL_USER,
+          to: user.email,
+          subject: 'Password Reset Request - Eunoia Therapy App',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #4F46E5; text-align: center;">Password Reset Request</h2>
+              <p>Hello ${user.username},</p>
+              <p>You requested a password reset for your Eunoia Therapy App account.</p>
+              <p>Click the button below to reset your password:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" style="background-color: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Reset Password</a>
+              </div>
+              <p style="color: #6b7280; font-size: 14px;">This link will expire in 1 hour.</p>
+              <p>If you didn't request this reset, please ignore this email.</p>
+              <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 14px; text-align: center;">Eunoia - Your Mental Health Companion</p>
+            </div>
+          `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Password reset email sent to ${user.email}`);
+        
+      } catch (error) {
+        console.error('❌ Failed to send email:', error);
+        
+        // Fallback: log the reset link for manual access
+        console.log('\n' + '='.repeat(80));
+        console.log('🔐 PASSWORD RESET LINK (EMAIL FAILED - FALLBACK)');
+        console.log('='.repeat(80));
+        console.log(`📧 Email: ${user.email}`);
+        console.log(`👤 Username: ${user.username}`);
+        console.log(`🔗 Reset URL: ${resetUrl}`);
+        console.log(`⏰ Expires: ${expiresAt.toISOString()}`);
+        console.log('='.repeat(80));
+        console.log('📋 COPY THIS LINK AND PASTE IT IN YOUR BROWSER:');
+        console.log(resetUrl);
+        console.log('='.repeat(80) + '\n');
+        
+        // Save to file for easy access
+        const resetInfo = {
+          email: user.email,
+          username: user.username,
+          resetUrl: resetUrl,
+          token: resetToken,
+          expiresAt: expiresAt,
+          timestamp: new Date().toISOString()
+        };
+        
+        try {
+          let existingData = [];
+          if (fs.existsSync('password-reset-links.json')) {
+            const fileContent = fs.readFileSync('password-reset-links.json', 'utf-8');
+            existingData = JSON.parse(fileContent);
+          }
+          existingData.push(resetInfo);
+          fs.writeFileSync('password-reset-links.json', JSON.stringify(existingData, null, 2));
+          console.log('✅ Reset link saved to password-reset-links.json');
+        } catch (fileError) {
+          console.log('⚠️ Could not save reset link to file');
+        }
+      }
+
+      // Success response
+      res.json({ 
+        message: "If an account with that email exists, a password reset link has been generated and saved to the server console and files."
+      });
+    } catch (error) {
+      console.error("Error processing forgot password request:", error);
+      res.status(500).json({ message: "Failed to process password reset request" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: "Token and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
+
+      // Find valid reset token
+      const [resetToken] = await db.select().from(passwordResetTokens).where(
+        and(
+          eq(passwordResetTokens.token, token),
+          eq(passwordResetTokens.used, false),
+          gt(passwordResetTokens.expiresAt, new Date())
+        )
+      ).limit(1);
+
+      if (!resetToken) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      await db.update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, resetToken.userId));
+
+      // Mark token as used
+      await db.update(passwordResetTokens)
+        .set({ used: true })
+        .where(eq(passwordResetTokens.id, resetToken.id));
+
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
+  // Clean up expired reset tokens (run this periodically)
+  app.post("/api/auth/cleanup-expired-tokens", async (req, res) => {
+    try {
+      await db.delete(passwordResetTokens).where(
+        lt(passwordResetTokens.expiresAt, new Date())
+      );
+      res.json({ message: "Expired tokens cleaned up successfully" });
+    } catch (error) {
+      console.error("Error cleaning up expired tokens:", error);
+      res.status(500).json({ message: "Failed to clean up expired tokens" });
     }
   });
 

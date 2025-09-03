@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { EyeIcon, EyeOffIcon, LogIn, UserPlus } from "lucide-react";
+import { EyeIcon, EyeOffIcon, LogIn, UserPlus, Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -17,6 +18,9 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }: LoginPag
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'success'>('email');
   const { toast } = useToast();
 
   const loginMutation = useMutation({
@@ -40,6 +44,27 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }: LoginPag
     },
   });
 
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await apiRequest("POST", "/api/auth/forgot-password", { email });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setForgotPasswordStep('success');
+      toast({
+        title: "Reset Link Sent",
+        description: data.message || "Check your email for password reset instructions",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Send Reset Link",
+        description: error.message || "Please try again later",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -53,6 +78,27 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }: LoginPag
     }
 
     loginMutation.mutate({ usernameOrEmail: usernameOrEmail.trim(), password });
+  };
+
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!forgotPasswordEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    forgotPasswordMutation.mutate(forgotPasswordEmail.trim());
+  };
+
+  const resetForgotPassword = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordEmail("");
+    setForgotPasswordStep('email');
   };
 
   return (
@@ -108,6 +154,16 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }: LoginPag
                   )}
                 </Button>
               </div>
+              <div className="text-right">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto text-sm text-muted-foreground hover:text-primary"
+                  onClick={() => setShowForgotPassword(true)}
+                >
+                  Forgot Password?
+                </Button>
+              </div>
             </div>
 
             <Button
@@ -140,6 +196,91 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }: LoginPag
           </div>
         </CardContent>
       </Card>
+
+      {/* Forgot Password Modal */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {forgotPasswordStep === 'success' ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  Reset Link Sent
+                </>
+              ) : (
+                <>
+                  <Mail className="w-5 h-5" />
+                  Forgot Password
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {forgotPasswordStep === 'success' 
+                ? "We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password."
+                : "Enter your email address and we'll send you a link to reset your password."
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          {forgotPasswordStep === 'email' ? (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgotPasswordEmail">Email Address</Label>
+                <Input
+                  id="forgotPasswordEmail"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={resetForgotPassword}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={forgotPasswordMutation.isPending}
+                >
+                  {forgotPasswordMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </div>
+                  ) : (
+                    "Send Reset Link"
+                  )}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                <p className="text-sm text-muted-foreground">
+                  The reset link will expire in 1 hour. If you don't see the email, check your spam folder.
+                </p>
+              </div>
+              
+              <Button
+                onClick={resetForgotPassword}
+                className="w-full"
+              >
+                Close
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

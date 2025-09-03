@@ -1,0 +1,488 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpace - AI Therapy Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4A90A4',
+                        secondary: '#7FB069',
+                        accent: '#F4A261',
+                        neutral: '#F8F9FA',
+                        'text-primary': '#2C3E50',
+                        'text-secondary': '#6C757D'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-neutral font-sans">
+    <!-- @COMPONENT: Header [Navigation and user controls] -->
+    <header class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <i class="fas fa-brain text-white text-lg"></i>
+                    </div>
+                    <h1 class="text-xl font-semibold text-text-primary">MindSpace</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" data-event="click:showSettings">
+                        <i class="fas fa-cog text-text-secondary"></i>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" data-event="click:showProfile">
+                        <i class="fas fa-user-circle text-text-secondary text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: DisclaimerBanner [Important therapy disclaimer] -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+            <div class="flex items-start space-x-3">
+                <i class="fas fa-info-circle text-amber-600 mt-1"></i>
+                <div class="text-sm text-amber-800">
+                    <p class="font-medium mb-1">Important Notice</p>
+                    <p>MindSpace is an AI companion designed to provide support and coping strategies. It is not a replacement for professional therapy or medical treatment. If you're experiencing a mental health crisis, please contact emergency services or a crisis hotline immediately.</p>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: DisclaimerBanner -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- @COMPONENT: MainConversationArea [Primary voice/chat interface] -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <!-- @COMPONENT: PersonaSelector [AI personality selection] -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-text-primary mb-4">Choose Your Therapist</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <!-- @MAP: personas.map(persona => ( -->
+                            <button class="p-4 rounded-xl border-2 border-gray-200 hover:border-primary transition-colors text-center group" data-event="click:selectPersona" data-bind="persona.id">
+                                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-opacity-20 transition-colors">
+                                    <i class="fas fa-user-md text-primary"></i>
+                                </div>
+                                <p class="text-sm font-medium text-text-primary" data-mock="true">Dr. Sarah</p>
+                                <p class="text-xs text-text-secondary" data-mock="true">Empathetic</p>
+                            </button>
+                            <button class="p-4 rounded-xl border-2 border-gray-200 hover:border-primary transition-colors text-center group">
+                                <div class="w-12 h-12 bg-secondary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-opacity-20 transition-colors">
+                                    <i class="fas fa-heart text-secondary"></i>
+                                </div>
+                                <p class="text-sm font-medium text-text-primary" data-mock="true">Alex</p>
+                                <p class="text-xs text-text-secondary" data-mock="true">Supportive</p>
+                            </button>
+                            <button class="p-4 rounded-xl border-2 border-gray-200 hover:border-primary transition-colors text-center group">
+                                <div class="w-12 h-12 bg-accent bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-opacity-20 transition-colors">
+                                    <i class="fas fa-lightbulb text-accent"></i>
+                                </div>
+                                <p class="text-sm font-medium text-text-primary" data-mock="true">Jordan</p>
+                                <p class="text-xs text-text-secondary" data-mock="true">Analytical</p>
+                            </button>
+                            <button class="p-4 rounded-xl border-2 border-gray-200 hover:border-primary transition-colors text-center group">
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-200 transition-colors">
+                                    <i class="fas fa-smile text-purple-600"></i>
+                                </div>
+                                <p class="text-sm font-medium text-text-primary" data-mock="true">Riley</p>
+                                <p class="text-xs text-text-secondary" data-mock="true">Uplifting</p>
+                            </button>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: PersonaSelector -->
+
+                    <!-- @COMPONENT: CommunicationTabs [Voice/Chat toggle] -->
+                    <div class="mb-6">
+                        <div class="flex bg-gray-100 rounded-xl p-1">
+                            <button class="flex-1 flex items-center justify-center py-3 px-4 rounded-lg bg-white shadow-sm text-primary font-medium transition-all" data-event="click:switchToVoice">
+                                <i class="fas fa-microphone mr-2"></i>
+                                Voice Chat
+                            </button>
+                            <button class="flex-1 flex items-center justify-center py-3 px-4 rounded-lg text-text-secondary hover:text-text-primary transition-colors" data-event="click:switchToText">
+                                <i class="fas fa-comments mr-2"></i>
+                                Text Chat
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: CommunicationTabs -->
+
+                    <!-- @COMPONENT: VoiceInterface [Primary voice conversation area] -->
+                    <div class="text-center py-12" data-mock="true">
+                        <!-- @STATE: isRecording:boolean = false, isProcessing:boolean = false -->
+                        <div class="w-32 h-32 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105" data-event="click:toggleRecording">
+                            <!-- @FUNCTIONALITY: This should implement voice recording with visual feedback -->
+                            <i class="fas fa-microphone text-white text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-text-primary mb-2">Tap to Start Talking</h3>
+                        <p class="text-text-secondary mb-4">Dr. Sarah is ready to listen and support you</p>
+                        
+                        <!-- @COMPONENT: VoiceVisualization [Audio wave visualization] -->
+                        <div class="flex justify-center space-x-1 mb-6">
+                            <!-- @FUNCTIONALITY: Should show audio levels during recording -->
+                            <div class="w-1 h-8 bg-primary rounded-full opacity-30"></div>
+                            <div class="w-1 h-12 bg-primary rounded-full opacity-40"></div>
+                            <div class="w-1 h-6 bg-primary rounded-full opacity-30"></div>
+                            <div class="w-1 h-10 bg-primary rounded-full opacity-50"></div>
+                            <div class="w-1 h-4 bg-primary rounded-full opacity-20"></div>
+                        </div>
+                        <!-- @END_COMPONENT: VoiceVisualization -->
+
+                        <!-- @COMPONENT: ConversationHistory [Recent conversation display] -->
+                        <div class="bg-gray-50 rounded-xl p-4 text-left max-h-60 overflow-y-auto">
+                            <div class="space-y-4">
+                                <div class="flex items-start space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user text-white text-sm"></i>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 max-w-xs">
+                                        <p class="text-sm text-text-primary">I've been feeling really anxious about work lately...</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-3 justify-end" data-mock="true">
+                                    <div class="bg-primary rounded-lg p-3 max-w-xs">
+                                        <p class="text-sm text-white">I understand that work anxiety can be overwhelming. Let's explore some breathing techniques that might help you feel more centered...</p>
+                                    </div>
+                                    <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-robot text-white text-sm"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ConversationHistory -->
+                    </div>
+                    <!-- @END_COMPONENT: VoiceInterface -->
+                </div>
+
+                <!-- @COMPONENT: CBTToolsPanel [Coping strategies and techniques] -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 flex items-center">
+                        <i class="fas fa-toolbox text-secondary mr-2"></i>
+                        CBT Coping Tools
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-md transition-all text-left group" data-event="click:openBreathingExercise">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-wind text-blue-600 mr-2"></i>
+                                <h4 class="font-medium text-text-primary">Breathing Exercise</h4>
+                            </div>
+                            <p class="text-sm text-text-secondary">4-7-8 breathing technique for anxiety relief</p>
+                        </button>
+                        
+                        <button class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:shadow-md transition-all text-left group" data-event="click:openThoughtChallenge">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-brain text-green-600 mr-2"></i>
+                                <h4 class="font-medium text-text-primary">Thought Challenge</h4>
+                            </div>
+                            <p class="text-sm text-text-secondary">Examine and reframe negative thoughts</p>
+                        </button>
+                        
+                        <button class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-md transition-all text-left group" data-event="click:openGroundingTechnique">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-anchor text-purple-600 mr-2"></i>
+                                <h4 class="font-medium text-text-primary">5-4-3-2-1 Grounding</h4>
+                            </div>
+                            <p class="text-sm text-text-secondary">Sensory technique to manage overwhelm</p>
+                        </button>
+                        
+                        <button class="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:shadow-md transition-all text-left group" data-event="click:openProgressiveMuscle">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-dumbbell text-orange-600 mr-2"></i>
+                                <h4 class="font-medium text-text-primary">Muscle Relaxation</h4>
+                            </div>
+                            <p class="text-sm text-text-secondary">Progressive muscle relaxation exercise</p>
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: CBTToolsPanel -->
+            </div>
+
+            <!-- @COMPONENT: SidebarPanel [Mood tracking, goals, crisis resources] -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- @COMPONENT: MoodTracker [Daily mood logging] -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 flex items-center">
+                        <i class="fas fa-chart-line text-accent mr-2"></i>
+                        Mood Check-in
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">How are you feeling today?</label>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs text-text-secondary">Very Low</span>
+                                <span class="text-xs text-text-secondary">Very High</span>
+                            </div>
+                            <input type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="1" max="10" value="6" data-event="change:updateMood">
+                            <div class="flex justify-center mt-2">
+                                <span class="text-lg" data-bind="moodEmoji" data-mock="true">😊</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-2">Energy Level</label>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 py-2 px-3 text-xs rounded-lg bg-gray-100 hover:bg-primary hover:text-white transition-colors" data-event="click:setEnergyLevel">Low</button>
+                                <button class="flex-1 py-2 px-3 text-xs rounded-lg bg-primary text-white" data-event="click:setEnergyLevel">Medium</button>
+                                <button class="flex-1 py-2 px-3 text-xs rounded-lg bg-gray-100 hover:bg-primary hover:text-white transition-colors" data-event="click:setEnergyLevel">High</button>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full bg-secondary text-white py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors" data-event="click:saveMoodEntry">
+                            Log Mood Entry
+                        </button>
+                    </div>
+                    
+                    <!-- @COMPONENT: MoodChart [Weekly mood visualization] -->
+                    <div class="mt-6 pt-4 border-t border-gray-100">
+                        <h4 class="text-sm font-medium text-text-primary mb-3">This Week</h4>
+                        <div class="flex justify-between items-end h-20">
+                            <!-- @FUNCTIONALITY: Should display actual mood data chart -->
+                            <div class="w-6 bg-primary opacity-60 rounded-t" style="height: 40%" data-mock="true"></div>
+                            <div class="w-6 bg-primary opacity-70 rounded-t" style="height: 60%" data-mock="true"></div>
+                            <div class="w-6 bg-primary opacity-80 rounded-t" style="height: 75%" data-mock="true"></div>
+                            <div class="w-6 bg-primary opacity-60 rounded-t" style="height: 45%" data-mock="true"></div>
+                            <div class="w-6 bg-primary opacity-90 rounded-t" style="height: 80%" data-mock="true"></div>
+                            <div class="w-6 bg-primary rounded-t" style="height: 90%" data-mock="true"></div>
+                            <div class="w-6 bg-gray-200 rounded-t" style="height: 20%" data-mock="true"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-text-secondary mt-2">
+                            <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: MoodChart -->
+                </div>
+                <!-- @END_COMPONENT: MoodTracker -->
+
+                <!-- @COMPONENT: GoalSetting [Personal goals and progress] -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 flex items-center">
+                        <i class="fas fa-target text-secondary mr-2"></i>
+                        Goals & Progress
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- @MAP: goals.map(goal => ( -->
+                        <div class="p-3 bg-gray-50 rounded-lg" data-mock="true">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-sm font-medium text-text-primary">Practice mindfulness daily</h4>
+                                <span class="text-xs text-secondary font-medium">5/7 days</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-secondary h-2 rounded-full" style="width: 71%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-3 bg-gray-50 rounded-lg" data-mock="true">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-sm font-medium text-text-primary">Exercise 3x per week</h4>
+                                <span class="text-xs text-secondary font-medium">2/3 times</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-secondary h-2 rounded-full" style="width: 67%"></div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                        
+                        <button class="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-text-secondary hover:border-secondary hover:text-secondary transition-colors text-sm" data-event="click:addNewGoal">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add New Goal
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: GoalSetting -->
+
+                <!-- @COMPONENT: CrisisResources [Emergency contacts and resources] -->
+                <div class="bg-red-50 border border-red-200 rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold text-red-800 mb-4 flex items-center">
+                        <i class="fas fa-heart text-red-600 mr-2"></i>
+                        Crisis Resources
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-3 border border-red-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-medium text-red-800">National Suicide Prevention Lifeline</h4>
+                                    <p class="text-red-600 font-semibold">988</p>
+                                </div>
+                                <button class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition-colors" data-event="click:callCrisisLine">
+                                    Call
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-3 border border-red-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-medium text-red-800">Crisis Text Line</h4>
+                                    <p class="text-red-600 font-semibold">Text HOME to 741741</p>
+                                </div>
+                                <button class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition-colors" data-event="click:textCrisisLine">
+                                    Text
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition-colors" data-event="click:viewAllResources">
+                            View All Resources
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: CrisisResources -->
+
+                <!-- @COMPONENT: SessionInfo [Current session details] -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 flex items-center">
+                        <i class="fas fa-clock text-accent mr-2"></i>
+                        Session Info
+                    </h3>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Session Started:</span>
+                            <span class="text-text-primary font-medium" data-bind="sessionStartTime" data-mock="true">2:30 PM</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Duration:</span>
+                            <span class="text-text-primary font-medium" data-bind="sessionDuration" data-mock="true">12 minutes</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Messages:</span>
+                            <span class="text-text-primary font-medium" data-bind="messageCount" data-mock="true">8</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <button class="w-full bg-gray-100 text-text-secondary py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors" data-event="click:endSession">
+                            End Session
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: SessionInfo -->
+            </div>
+            <!-- @END_COMPONENT: SidebarPanel -->
+        </div>
+    </div>
+
+    <!-- @COMPONENT: CrisisModal [Emergency intervention modal] -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" id="crisisModal" data-event="click:hideCrisisModal">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full" onclick="event.stopPropagation()">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-text-primary mb-4">We're Here to Help</h3>
+                    <p class="text-text-secondary mb-6">It sounds like you might be going through a difficult time. Remember, you're not alone, and help is available.</p>
+                    
+                    <div class="space-y-3">
+                        <button class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors" data-event="click:callEmergency">
+                            <i class="fas fa-phone mr-2"></i>
+                            Call 988 (Suicide Prevention Lifeline)
+                        </button>
+                        <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors" data-event="click:textCrisis">
+                            <i class="fas fa-sms mr-2"></i>
+                            Text HOME to 741741
+                        </button>
+                        <button class="w-full bg-gray-200 text-text-primary py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors" data-event="click:continueSession">
+                            Continue Our Conversation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CrisisModal -->
+
+    <script>
+        // TODO: Implement OpenAI integration for conversational AI
+        // TODO: Implement Web Speech API for voice recognition
+        // TODO: Implement text-to-speech for AI responses
+        // TODO: Implement mood tracking data persistence
+        // TODO: Implement crisis keyword detection
+        // TODO: Implement goal setting and tracking functionality
+        // TODO: Implement session management and conversation history
+
+        (function() {
+            // Voice recording state management
+            let isRecording = false;
+            let currentPersona = 'dr-sarah';
+            let moodLevel = 6;
+            
+            // Initialize UI event handlers
+            document.addEventListener('DOMContentLoaded', function() {
+                // Voice recording toggle
+                const voiceButton = document.querySelector('[data-event="click:toggleRecording"]');
+                if (voiceButton) {
+                    voiceButton.addEventListener('click', function() {
+                        isRecording = !isRecording;
+                        // TODO: Implement actual voice recording logic
+                        updateVoiceButtonState();
+                    });
+                }
+                
+                // Mood slider update
+                const moodSlider = document.querySelector('[data-event="change:updateMood"]');
+                if (moodSlider) {
+                    moodSlider.addEventListener('input', function() {
+                        moodLevel = this.value;
+                        updateMoodEmoji();
+                    });
+                }
+                
+                // Crisis modal management
+                const crisisModal = document.getElementById('crisisModal');
+                window.showCrisisModal = function() {
+                    if (crisisModal) crisisModal.classList.remove('hidden');
+                };
+                
+                window.hideCrisisModal = function() {
+                    if (crisisModal) crisisModal.classList.add('hidden');
+                };
+            });
+            
+            function updateVoiceButtonState() {
+                const voiceButton = document.querySelector('[data-event="click:toggleRecording"]');
+                if (voiceButton) {
+                    if (isRecording) {
+                        voiceButton.classList.add('animate-pulse');
+                        voiceButton.innerHTML = '<i class="fas fa-stop text-white text-4xl"></i>';
+                    } else {
+                        voiceButton.classList.remove('animate-pulse');
+                        voiceButton.innerHTML = '<i class="fas fa-microphone text-white text-4xl"></i>';
+                    }
+                }
+            }
+            
+            function updateMoodEmoji() {
+                const emojiElement = document.querySelector('[data-bind="moodEmoji"]');
+                if (emojiElement) {
+                    const emojis = ['😢', '😔', '😐', '😊', '😄'];
+                    const emojiIndex = Math.min(Math.floor((moodLevel - 1) / 2), 4);
+                    emojiElement.textContent = emojis[emojiIndex];
+                }
+            }
+            
+            // Simulated crisis detection
+            function detectCrisisKeywords(text) {
+                const crisisKeywords = ['suicide', 'kill myself', 'end it all', 'not worth living'];
+                return crisisKeywords.some(keyword => text.toLowerCase().includes(keyword));
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -18,6 +18,7 @@ import AccountPage from "@/pages/account";
 import SessionPage from "@/pages/session";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
+import ResetPasswordPage from "@/pages/reset-password";
 
 export interface SessionSettings {
   therapistPersonality: string;
@@ -178,6 +179,12 @@ function Router() {
     await refetchUser();
     queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
   };
+
+  // Check if we're on the reset password page
+  const path = window.location.pathname;
+  if (path.startsWith('/reset-password')) {
+    return <ResetPasswordPage />;
+  }
 
   if (authView === 'login') {
     return (
