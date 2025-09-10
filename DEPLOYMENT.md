@@ -35,3 +35,5 @@ FROM_EMAIL=your-email@example.com
 - Set up custom domain
 - Configure email service (SendGrid/Resend)
 - Add PWA features for mobile app
+
+
