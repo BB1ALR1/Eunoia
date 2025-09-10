@@ -8,10 +8,13 @@ export default function App() {
   const [error, setError] = useState(false);
 
   // Your deployed website URL - update this when you deploy to Vercel
-  const websiteUrl = 'https://eunoia-mental-health.vercel.app'; // Update this with your actual Vercel URL
+  const websiteUrl = 'https://eunoia-e86srktbw-eunoia-ai.vercel.app'; // Your actual Vercel URL
   
   // For local testing, you can use your local IP
   // const websiteUrl = 'http://192.168.68.66:5000';
+  
+  // Demo URL for testing (works without backend)
+  // const websiteUrl = 'https://eunoia-demo.vercel.app';
 
   const handleLoadStart = () => {
     setLoading(true);
