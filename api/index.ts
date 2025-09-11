@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { db } from "../shared/db";
-import { users, sessions, messages, journalEntries, moodEntries, passwordResetTokens, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema, insertPasswordResetTokenSchema } from "../shared/schema";
+import { users, sessions as sessionTable, messages, journalEntries, moodEntries, passwordResetTokens, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema, insertPasswordResetTokenSchema } from "../shared/schema";
 import { eq, desc, or, and, lt, gt } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -165,7 +165,12 @@ app.get("/api/user/profile", requireAuth, (req, res) => {
 
 // Health check
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    hasDatabaseUrl: !!process.env.DATABASE_URL
+  });
 });
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
