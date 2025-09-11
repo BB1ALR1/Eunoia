@@ -29,6 +29,16 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }: LoginPag
       return response.json();
     },
     onSuccess: (data) => {
+      // Store token in localStorage
+      localStorage.setItem("eunoia-auth-state", JSON.stringify({
+        isLoggedIn: true,
+        userId: data.id,
+        username: data.username,
+        email: data.email,
+        token: data.token,
+        timestamp: Date.now()
+      }));
+      
       toast({
         title: "Welcome back!",
         description: data.message || "Successfully logged in",

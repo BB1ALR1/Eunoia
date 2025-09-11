@@ -7,6 +7,36 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Get auth token from localStorage
+function getAuthToken(): string | null {
+  const authState = localStorage.getItem("eunoia-auth-state");
+  if (authState) {
+    try {
+      const parsed = JSON.parse(authState);
+      return parsed.token || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Get headers with auth token
+function getHeaders(data?: unknown): Record<string, string> {
+  const headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -14,9 +44,8 @@ export async function apiRequest(
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: getHeaders(data),
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
   });
 
   await throwIfResNotOk(res);
@@ -30,7 +59,7 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
+      headers: getHeaders(),
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

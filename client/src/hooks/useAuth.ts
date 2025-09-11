@@ -10,12 +10,34 @@ export interface User {
 export function useAuth() {
   const queryClient = useQueryClient();
 
+  // Check for stored auth state first
+  const getStoredAuth = () => {
+    const authState = localStorage.getItem("eunoia-auth-state");
+    if (authState) {
+      try {
+        const parsed = JSON.parse(authState);
+        // Check if token is not expired (24 hours)
+        if (parsed.token && parsed.timestamp && (Date.now() - parsed.timestamp) < 24 * 60 * 60 * 1000) {
+          return {
+            id: parsed.userId,
+            username: parsed.username,
+            email: parsed.email
+          };
+        }
+      } catch {
+        // Invalid stored data
+      }
+    }
+    return null;
+  };
+
   const { data: user, isLoading, error, refetch } = useQuery({
-    queryKey: ["/api/auth/user"],
+    queryKey: ["/api/user/profile"],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: true, // Always refetch when component mounts
+    initialData: getStoredAuth, // Use stored auth as initial data
   });
 
   const logoutMutation = useMutation({
@@ -32,21 +54,6 @@ export function useAuth() {
       window.location.href = "/";
     },
   });
-
-  // Save authentication state to localStorage when user data changes
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("eunoia-auth-state", JSON.stringify({
-        isLoggedIn: true,
-        userId: user.id,
-        username: user.username,
-        timestamp: Date.now()
-      }));
-    } else if (!isLoading) {
-      // Only clear if we're not loading (to avoid clearing during initial load)
-      localStorage.removeItem("eunoia-auth-state");
-    }
-  }, [user, isLoading]);
 
   const logout = () => {
     logoutMutation.mutate();

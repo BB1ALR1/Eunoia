@@ -28,6 +28,16 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }: SignupP
       return response.json();
     },
     onSuccess: (data) => {
+      // Store token in localStorage
+      localStorage.setItem("eunoia-auth-state", JSON.stringify({
+        isLoggedIn: true,
+        userId: data.id,
+        username: data.username,
+        email: data.email,
+        token: data.token,
+        timestamp: Date.now()
+      }));
+      
       toast({
         title: "Account Created!",
         description: data.message || "Welcome to Eunoia! You're now logged in.",
