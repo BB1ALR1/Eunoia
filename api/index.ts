@@ -1,12 +1,37 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { db } from "../shared/db";
+import { users } from "../shared/schema";
+import { eq, or } from "drizzle-orm";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Simple in-memory user store for testing (replace with database later)
-const users = new Map();
+// Simple in-memory session store for serverless
 const sessions = new Map();
+
+// Middleware to parse session from headers
+const parseSession = (req: any, res: any, next: any) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const sessionData = sessions.get(token);
+    if (sessionData) {
+      req.user = sessionData;
+    }
+  }
+  next();
+};
+
+// Middleware to check authentication
+const requireAuth = (req: any, res: any, next: any) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  next();
+};
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -41,40 +66,46 @@ app.post("/api/auth/signup", async (req, res) => {
     }
 
     // Check if username or email already exists
-    for (const [id, user] of users) {
-      if (user.username === username) {
+    const existingUser = await db.select().from(users).where(
+      or(eq(users.username, username), eq(users.email, email))
+    ).limit(1);
+    
+    if (existingUser.length > 0) {
+      const existing = existingUser[0];
+      if (existing.username === username) {
         return res.status(400).json({ message: "Username already exists" });
-      }
-      if (user.email === email) {
+      } else {
         return res.status(400).json({ message: "Email already exists" });
       }
     }
 
-    // Create user (simple hash for demo)
-    const userId = Date.now().toString();
-    const hashedPassword = Buffer.from(password).toString('base64'); // Simple encoding for demo
-    
-    users.set(userId, {
-      id: userId,
-      username,
-      email,
-      password: hashedPassword
-    });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        username,
+        email,
+        password: hashedPassword,
+      })
+      .returning();
 
     // Create session token
-    const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const sessionToken = crypto.randomBytes(32).toString('hex');
     sessions.set(sessionToken, {
-      userId,
-      username,
-      email
+      userId: newUser.id,
+      username: newUser.username,
+      email: newUser.email
     });
 
-    console.log("User created successfully:", userId);
+    console.log("User created successfully:", newUser.id);
 
     res.json({ 
-      id: userId, 
-      username,
-      email,
+      id: newUser.id, 
+      username: newUser.username,
+      email: newUser.email,
       token: sessionToken,
       message: "Account created successfully" 
     });
@@ -96,38 +127,34 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     // Find user by username or email
-    let foundUser = null;
-    for (const [id, user] of users) {
-      if (user.username === usernameOrEmail || user.email === usernameOrEmail) {
-        foundUser = user;
-        break;
-      }
-    }
+    const [user] = await db.select().from(users).where(
+      or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail))
+    ).limit(1);
     
-    if (!foundUser) {
+    if (!user) {
       return res.status(401).json({ message: "Invalid username/email or password" });
     }
 
-    // Check password (simple comparison for demo)
-    const hashedPassword = Buffer.from(password).toString('base64');
-    if (foundUser.password !== hashedPassword) {
+    // Check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid username/email or password" });
     }
 
     // Create session token
-    const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const sessionToken = crypto.randomBytes(32).toString('hex');
     sessions.set(sessionToken, {
-      userId: foundUser.id,
-      username: foundUser.username,
-      email: foundUser.email
+      userId: user.id,
+      username: user.username,
+      email: user.email
     });
 
-    console.log("User logged in successfully:", foundUser.id);
+    console.log("User logged in successfully:", user.id);
 
     res.json({ 
-      id: foundUser.id, 
-      username: foundUser.username,
-      email: foundUser.email,
+      id: user.id, 
+      username: user.username,
+      email: user.email,
       token: sessionToken,
       message: "Logged in successfully" 
     });
@@ -138,7 +165,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // Logout endpoint
-app.post("/api/auth/logout", (req, res) => {
+app.post("/api/auth/logout", parseSession, (req, res) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
@@ -148,25 +175,16 @@ app.post("/api/auth/logout", (req, res) => {
 });
 
 // User profile endpoint
-app.get("/api/user/profile", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: "Authentication required" });
-  }
-  
-  const token = authHeader.substring(7);
-  const sessionData = sessions.get(token);
-  
-  if (!sessionData) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-  
+app.get("/api/user/profile", parseSession, requireAuth, (req, res) => {
   res.json({
-    id: sessionData.userId,
-    username: sessionData.username,
-    email: sessionData.email
+    id: req.user.userId,
+    username: req.user.username,
+    email: req.user.email
   });
 });
+
+// Apply session parsing to all routes
+app.use(parseSession);
 
 // Error handling
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -175,6 +193,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const message = err.message || "Internal Server Error";
   res.status(status).json({ message, error: err.message });
 });
+
 
 // Export the Express app for Vercel
 export default app;
