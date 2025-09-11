@@ -46,6 +46,7 @@ app.get("/api/health", async (req, res) => {
       // Test database connection
       await db.select().from(users).limit(1);
       dbTest = true;
+      console.log("Database test successful");
     } catch (error) {
       console.error("Database test failed:", error);
     }
@@ -59,6 +60,11 @@ app.get("/api/health", async (req, res) => {
     databaseConnected: !!db,
     databaseTest: dbTest,
     usingMemoryStore: !db || !dbTest,
+    vercelEnv: {
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    },
     message: "Serverless function is working"
   });
 });

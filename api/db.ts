@@ -8,7 +8,9 @@ let pool: any = null;
 export const getDatabase = () => {
   if (!db && process.env.DATABASE_URL) {
     try {
-      // Create a new pool for each serverless function invocation
+      console.log("Attempting database connection with DATABASE_URL:", process.env.DATABASE_URL ? "Present" : "Missing");
+      
+      // Use the DATABASE_URL from Vercel environment variables
       pool = new Pool({ 
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false },
@@ -18,11 +20,13 @@ export const getDatabase = () => {
       });
       
       db = drizzle({ client: pool, schema });
-      console.log("Database connection established successfully");
+      console.log("Database connected using Vercel environment variables");
     } catch (error) {
       console.error("Database connection failed:", error);
       return null;
     }
+  } else if (!process.env.DATABASE_URL) {
+    console.log("DATABASE_URL environment variable not found");
   }
   return db;
 };
