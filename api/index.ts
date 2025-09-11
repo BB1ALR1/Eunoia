@@ -3,7 +3,6 @@ import { users } from "../shared/schema";
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { getDatabase, closeDatabase } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -14,6 +13,40 @@ const sessions = new Map();
 
 // In-memory user store as fallback
 const memoryUsers = new Map();
+
+// Database connection (lazy initialization)
+let db: any = null;
+let pool: any = null;
+
+const getDatabase = () => {
+  if (!db && process.env.DATABASE_URL) {
+    try {
+      console.log("Attempting database connection...");
+      
+      // Import pg dynamically to avoid top-level await issues
+      const { Pool } = require('pg');
+      const { drizzle } = require('drizzle-orm/node-postgres');
+      const schema = require('../shared/schema');
+      
+      pool = new Pool({ 
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+        max: 1,
+        idleTimeoutMillis: 0,
+        connectionTimeoutMillis: 10000,
+      });
+      
+      db = drizzle({ client: pool, schema });
+      console.log("Database connected successfully");
+    } catch (error) {
+      console.error("Database connection failed:", error);
+      return null;
+    }
+  } else if (!process.env.DATABASE_URL) {
+    console.log("DATABASE_URL not found in environment variables");
+  }
+  return db;
+};
 
 // Middleware to parse session from headers
 const parseSession = (req: any, res: any, next: any) => {
@@ -38,35 +71,43 @@ const requireAuth = (req: any, res: any, next: any) => {
 
 // Health check endpoint
 app.get("/api/health", async (req, res) => {
-  const db = getDatabase();
-  let dbTest = false;
-  
-  if (db) {
-    try {
-      // Test database connection
-      await db.select().from(users).limit(1);
-      dbTest = true;
-      console.log("Database test successful");
-    } catch (error) {
-      console.error("Database test failed:", error);
+  try {
+    const database = getDatabase();
+    let dbTest = false;
+    
+    if (database) {
+      try {
+        await database.select().from(users).limit(1);
+        dbTest = true;
+        console.log("Database test successful");
+      } catch (error) {
+        console.error("Database test failed:", error);
+      }
     }
-  }
-  
-  res.json({ 
-    status: "ok", 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
-    databaseConnected: !!db,
-    databaseTest: dbTest,
-    usingMemoryStore: !db || !dbTest,
-    vercelEnv: {
+    
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
       hasDatabaseUrl: !!process.env.DATABASE_URL,
-      nodeEnv: process.env.NODE_ENV,
-      vercelEnv: process.env.VERCEL_ENV
-    },
-    message: "Serverless function is working"
-  });
+      databaseConnected: !!database,
+      databaseTest: dbTest,
+      usingMemoryStore: !database || !dbTest,
+      vercelEnv: {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        nodeEnv: process.env.NODE_ENV,
+        vercelEnv: process.env.VERCEL_ENV
+      },
+      message: "Serverless function is working"
+    });
+  } catch (error) {
+    console.error("Health check error:", error);
+    res.status(500).json({ 
+      status: "error", 
+      message: "Health check failed",
+      error: error.message 
+    });
+  }
 });
 
 // Signup endpoint
@@ -91,13 +132,12 @@ app.post("/api/auth/signup", async (req, res) => {
     }
 
     let newUser;
-    const db = getDatabase();
+    const database = getDatabase();
 
-    if (db) {
-      // Use database
+    if (database) {
       try {
         // Check if username or email already exists
-        const existingUser = await db.select().from(users).where(
+        const existingUser = await database.select().from(users).where(
           or(eq(users.username, username), eq(users.email, email))
         ).limit(1);
         
@@ -114,7 +154,7 @@ app.post("/api/auth/signup", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user
-        const [createdUser] = await db
+        const [createdUser] = await database
           .insert(users)
           .values({
             username,
@@ -131,7 +171,7 @@ app.post("/api/auth/signup", async (req, res) => {
       }
     }
 
-    if (!db || !newUser) {
+    if (!database || !newUser) {
       // Use memory store
       for (const [id, user] of memoryUsers) {
         if (user.username === username) {
@@ -171,7 +211,7 @@ app.post("/api/auth/signup", async (req, res) => {
       email: newUser.email,
       token: sessionToken,
       message: "Account created successfully",
-      storage: (db && newUser && newUser.id && !isNaN(parseInt(newUser.id))) ? "database" : "memory"
+      storage: (database && newUser && newUser.id && !isNaN(parseInt(newUser.id))) ? "database" : "memory"
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -191,12 +231,11 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     let user = null;
-    const db = getDatabase();
+    const database = getDatabase();
 
-    if (db) {
-      // Use database
+    if (database) {
       try {
-        const [foundUser] = await db.select().from(users).where(
+        const [foundUser] = await database.select().from(users).where(
           or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail))
         ).limit(1);
         user = foundUser;
@@ -205,7 +244,7 @@ app.post("/api/auth/login", async (req, res) => {
       }
     }
 
-    if (!db || !user) {
+    if (!database || !user) {
       // Use memory store
       for (const [id, memoryUser] of memoryUsers) {
         if (memoryUser.username === usernameOrEmail || memoryUser.email === usernameOrEmail) {
@@ -241,7 +280,7 @@ app.post("/api/auth/login", async (req, res) => {
       email: user.email,
       token: sessionToken,
       message: "Logged in successfully",
-      storage: (db && user && user.id && !isNaN(parseInt(user.id))) ? "database" : "memory"
+      storage: (database && user && user.id && !isNaN(parseInt(user.id))) ? "database" : "memory"
     });
   } catch (error) {
     console.error("Login error:", error);
