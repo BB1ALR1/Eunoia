@@ -3,6 +3,7 @@ import { users } from "../shared/schema";
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { getDatabase, closeDatabase } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -13,16 +14,6 @@ const sessions = new Map();
 
 // In-memory user store as fallback
 const memoryUsers = new Map();
-
-// Try to import database connection, fallback to memory if it fails
-let db: any = null;
-try {
-  const { db: database } = await import("../shared/db");
-  db = database;
-  console.log("Database connection established");
-} catch (error) {
-  console.log("Database connection failed, using memory store:", error.message);
-}
 
 // Middleware to parse session from headers
 const parseSession = (req: any, res: any, next: any) => {
@@ -46,14 +37,28 @@ const requireAuth = (req: any, res: any, next: any) => {
 };
 
 // Health check endpoint
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+  const db = getDatabase();
+  let dbTest = false;
+  
+  if (db) {
+    try {
+      // Test database connection
+      await db.select().from(users).limit(1);
+      dbTest = true;
+    } catch (error) {
+      console.error("Database test failed:", error);
+    }
+  }
+  
   res.json({ 
     status: "ok", 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     hasDatabaseUrl: !!process.env.DATABASE_URL,
     databaseConnected: !!db,
-    usingMemoryStore: !db,
+    databaseTest: dbTest,
+    usingMemoryStore: !db || !dbTest,
     message: "Serverless function is working"
   });
 });
@@ -80,6 +85,7 @@ app.post("/api/auth/signup", async (req, res) => {
     }
 
     let newUser;
+    const db = getDatabase();
 
     if (db) {
       // Use database
@@ -116,11 +122,10 @@ app.post("/api/auth/signup", async (req, res) => {
       } catch (dbError) {
         console.error("Database error, falling back to memory:", dbError);
         // Fall back to memory store
-        db = null;
       }
     }
 
-    if (!db) {
+    if (!db || !newUser) {
       // Use memory store
       for (const [id, user] of memoryUsers) {
         if (user.username === username) {
@@ -160,7 +165,7 @@ app.post("/api/auth/signup", async (req, res) => {
       email: newUser.email,
       token: sessionToken,
       message: "Account created successfully",
-      storage: db ? "database" : "memory"
+      storage: (db && newUser && newUser.id && !isNaN(parseInt(newUser.id))) ? "database" : "memory"
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -180,6 +185,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     let user = null;
+    const db = getDatabase();
 
     if (db) {
       // Use database
@@ -190,11 +196,10 @@ app.post("/api/auth/login", async (req, res) => {
         user = foundUser;
       } catch (dbError) {
         console.error("Database error, falling back to memory:", dbError);
-        db = null;
       }
     }
 
-    if (!db) {
+    if (!db || !user) {
       // Use memory store
       for (const [id, memoryUser] of memoryUsers) {
         if (memoryUser.username === usernameOrEmail || memoryUser.email === usernameOrEmail) {
@@ -230,7 +235,7 @@ app.post("/api/auth/login", async (req, res) => {
       email: user.email,
       token: sessionToken,
       message: "Logged in successfully",
-      storage: db ? "database" : "memory"
+      storage: (db && user && user.id && !isNaN(parseInt(user.id))) ? "database" : "memory"
     });
   } catch (error) {
     console.error("Login error:", error);
