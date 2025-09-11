@@ -1,5 +1,4 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { db } from "../shared/db";
 import { users } from "../shared/schema";
 import { eq, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -11,6 +10,19 @@ app.use(express.urlencoded({ extended: false }));
 
 // Simple in-memory session store for serverless
 const sessions = new Map();
+
+// In-memory user store as fallback
+const memoryUsers = new Map();
+
+// Try to import database connection, fallback to memory if it fails
+let db: any = null;
+try {
+  const { db: database } = await import("../shared/db");
+  db = database;
+  console.log("Database connection established");
+} catch (error) {
+  console.log("Database connection failed, using memory store:", error.message);
+}
 
 // Middleware to parse session from headers
 const parseSession = (req: any, res: any, next: any) => {
@@ -40,6 +52,8 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     hasDatabaseUrl: !!process.env.DATABASE_URL,
+    databaseConnected: !!db,
+    usingMemoryStore: !db,
     message: "Serverless function is working"
   });
 });
@@ -65,32 +79,72 @@ app.post("/api/auth/signup", async (req, res) => {
       return res.status(400).json({ message: "Please enter a valid email address" });
     }
 
-    // Check if username or email already exists
-    const existingUser = await db.select().from(users).where(
-      or(eq(users.username, username), eq(users.email, email))
-    ).limit(1);
-    
-    if (existingUser.length > 0) {
-      const existing = existingUser[0];
-      if (existing.username === username) {
-        return res.status(400).json({ message: "Username already exists" });
-      } else {
-        return res.status(400).json({ message: "Email already exists" });
+    let newUser;
+
+    if (db) {
+      // Use database
+      try {
+        // Check if username or email already exists
+        const existingUser = await db.select().from(users).where(
+          or(eq(users.username, username), eq(users.email, email))
+        ).limit(1);
+        
+        if (existingUser.length > 0) {
+          const existing = existingUser[0];
+          if (existing.username === username) {
+            return res.status(400).json({ message: "Username already exists" });
+          } else {
+            return res.status(400).json({ message: "Email already exists" });
+          }
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create user
+        const [createdUser] = await db
+          .insert(users)
+          .values({
+            username,
+            email,
+            password: hashedPassword,
+          })
+          .returning();
+
+        newUser = createdUser;
+        console.log("User created in database:", newUser.id);
+      } catch (dbError) {
+        console.error("Database error, falling back to memory:", dbError);
+        // Fall back to memory store
+        db = null;
       }
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (!db) {
+      // Use memory store
+      for (const [id, user] of memoryUsers) {
+        if (user.username === username) {
+          return res.status(400).json({ message: "Username already exists" });
+        }
+        if (user.email === email) {
+          return res.status(400).json({ message: "Email already exists" });
+        }
+      }
 
-    // Create user
-    const [newUser] = await db
-      .insert(users)
-      .values({
+      // Create user in memory
+      const userId = Date.now().toString();
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      newUser = {
+        id: userId,
         username,
         email,
-        password: hashedPassword,
-      })
-      .returning();
+        password: hashedPassword
+      };
+      
+      memoryUsers.set(userId, newUser);
+      console.log("User created in memory:", userId);
+    }
 
     // Create session token
     const sessionToken = crypto.randomBytes(32).toString('hex');
@@ -100,14 +154,13 @@ app.post("/api/auth/signup", async (req, res) => {
       email: newUser.email
     });
 
-    console.log("User created successfully:", newUser.id);
-
     res.json({ 
       id: newUser.id, 
       username: newUser.username,
       email: newUser.email,
       token: sessionToken,
-      message: "Account created successfully" 
+      message: "Account created successfully",
+      storage: db ? "database" : "memory"
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -126,10 +179,30 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ message: "Username/email and password are required" });
     }
 
-    // Find user by username or email
-    const [user] = await db.select().from(users).where(
-      or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail))
-    ).limit(1);
+    let user = null;
+
+    if (db) {
+      // Use database
+      try {
+        const [foundUser] = await db.select().from(users).where(
+          or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail))
+        ).limit(1);
+        user = foundUser;
+      } catch (dbError) {
+        console.error("Database error, falling back to memory:", dbError);
+        db = null;
+      }
+    }
+
+    if (!db) {
+      // Use memory store
+      for (const [id, memoryUser] of memoryUsers) {
+        if (memoryUser.username === usernameOrEmail || memoryUser.email === usernameOrEmail) {
+          user = memoryUser;
+          break;
+        }
+      }
+    }
     
     if (!user) {
       return res.status(401).json({ message: "Invalid username/email or password" });
@@ -156,7 +229,8 @@ app.post("/api/auth/login", async (req, res) => {
       username: user.username,
       email: user.email,
       token: sessionToken,
-      message: "Logged in successfully" 
+      message: "Logged in successfully",
+      storage: db ? "database" : "memory"
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -193,7 +267,6 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const message = err.message || "Internal Server Error";
   res.status(status).json({ message, error: err.message });
 });
-
 
 // Export the Express app for Vercel
 export default app;
