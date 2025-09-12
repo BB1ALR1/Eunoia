@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { db } from "../shared/db";
-import { users, sessions, messages, journalEntries, moodEntries, passwordResetTokens, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema, insertPasswordResetTokenSchema } from "../shared/schema";
+import { users, sessions as sessionsTable, messages, journalEntries, moodEntries, passwordResetTokens, insertUserSchema, insertSessionSchema, insertMessageSchema, insertJournalEntrySchema, insertMoodEntrySchema, insertPasswordResetTokenSchema } from "../shared/schema";
 import { eq, desc, or, and, lt, gt } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -10,14 +10,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Simple in-memory session store for serverless (not ideal for production)
-const sessions = new Map();
+const sessionStore = new Map<string, { userId: number; username: string; email: string }>();
 
 // Middleware to parse session from headers (simple token-based auth)
-const parseSession = (req: any, res: any, next: any) => {
+const parseSession = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
-    const sessionData = sessions.get(token);
+    const sessionData = sessionStore.get(token);
     if (sessionData) {
       req.user = sessionData;
     }
@@ -26,7 +26,7 @@ const parseSession = (req: any, res: any, next: any) => {
 };
 
 // Middleware to check authentication
-const requireAuth = (req: any, res: any, next: any) => {
+const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     return res.status(401).json({ message: "Authentication required" });
   }
@@ -34,7 +34,7 @@ const requireAuth = (req: any, res: any, next: any) => {
 };
 
 // Authentication routes
-app.post("/api/auth/signup", async (req, res) => {
+app.post("/api/auth/signup", async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
     
@@ -80,7 +80,7 @@ app.post("/api/auth/signup", async (req, res) => {
 
     // Create session token
     const sessionToken = crypto.randomBytes(32).toString('hex');
-    sessions.set(sessionToken, {
+    sessionStore.set(sessionToken, {
       userId: newUser.id,
       username: newUser.username,
       email: newUser.email
@@ -93,13 +93,14 @@ app.post("/api/auth/signup", async (req, res) => {
       token: sessionToken,
       message: "Account created successfully" 
     });
-  } catch (error) {
-    console.error("Error creating user:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Error creating user:", errorMessage);
     res.status(500).json({ message: "Failed to create account" });
   }
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", async (req: Request, res: Response) => {
   try {
     const { usernameOrEmail, password } = req.body;
     
@@ -119,11 +120,11 @@ app.post("/api/auth/login", async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid username/email or password" });
-    
+    }
 
     // Create session token
     const sessionToken = crypto.randomBytes(32).toString('hex');
-    sessions.set(sessionToken, {
+    sessionStore.set(sessionToken, {
       userId: user.id,
       username: user.username,
       email: user.email
@@ -136,17 +137,18 @@ app.post("/api/auth/login", async (req, res) => {
       token: sessionToken,
       message: "Logged in successfully" 
     });
-  } catch (error) {
-    console.error("Error logging in:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Error logging in:", errorMessage);
     res.status(500).json({ message: "Failed to log in" });
   }
 });
 
-app.post("/api/auth/logout", parseSession, (req, res) => {
+app.post("/api/auth/logout", parseSession, (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
-    sessions.delete(token);
+    sessionStore.delete(token);
   }
   res.json({ message: "Logged out successfully" });
 });
@@ -155,16 +157,17 @@ app.post("/api/auth/logout", parseSession, (req, res) => {
 app.use(parseSession);
 
 // Basic API routes (simplified for serverless)
-app.get("/api/user/profile", requireAuth, (req, res) => {
+app.get("/api/user/profile", requireAuth, (req: Request, res: Response) => {
+  const user = req.user!;
   res.json({
-    id: req.user.userId,
-    username: req.user.username,
-    email: req.user.email
+    id: user.userId,
+    username: user.username,
+    email: user.email
   });
 });
 
 // Health check
-app.get("/api/health", (req, res) => {
+app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
